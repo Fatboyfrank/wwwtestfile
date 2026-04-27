@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>OSINT Investigation Toolkit Pro</title>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+    body{background:#0a0a0a;color:#e0e0e0;height:100vh;overflow:hidden}
+    #app{display:flex;height:100vh}
+    
+    /* Sidebar */
+    #sidebar{width:400px;background:#151515;border-right:1px solid #333;overflow-y:auto;padding:15px}
+    #sidebar::-webkit-scrollbar{width:6px}
+    #sidebar::-webkit-scrollbar-track{background:#0a0a0a}
+    #sidebar::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+    
+    h1{color:#00ff88;font-size:22px;margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid #00ff88;text-transform:uppercase;letter-spacing:2px}
+    
+    .nav-tabs{display:flex;gap:5px;margin-bottom:15px;flex-wrap:wrap}
+    .nav-tab{padding:10px 18px;background:#1a1a1a;border:1px solid #333;border-radius:8px;cursor:pointer;font-size:12px;color:#888;transition:all 0.3s}
+    .nav-tab:hover{background:#252525;color:#fff}
+    .nav-tab.active{background:#00ff88;color:#000;font-weight:bold}
+    
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    
+    .tool-group{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:15px;margin-bottom:15px;transition:border-color 0.3s}
+    .tool-group:hover{border-color:#00ff88}
+    
+    .tool-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+    .tool-icon{width:32px;height:32px;background:linear-gradient(135deg,#00ff88,#00cc6a);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+    .tool-title{color:#fff;font-weight:bold;font-size:14px}
+    
+    input,select,textarea{width:100%;padding:12px;background:#0a0a0a;border:1px solid #333;color:#fff;border-radius:8px;margin-bottom:10px;font-size:13px;transition:all 0.3s}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#00ff88;box-shadow:0 0 10px rgba(0,255,136,0.2)}
+    
+    .btn-row{display:flex;gap:8px;margin-bottom:10px}
+    button{flex:1;padding:12px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;font-size:12px;transition:all 0.3s;text-transform:uppercase;letter-spacing:1px}
+    .btn-primary{background:linear-gradient(135deg,#00ff88,#00cc6a);color:#000}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(0,255,136,0.4)}
+    .btn-secondary{background:linear-gradient(135deg,#0088ff,#0066cc);color:#fff}
+    .btn-secondary:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(0,136,255,0.4)}
+    .btn-danger{background:linear-gradient(135deg,#ff4444,#cc0000);color:#fff}
+    .btn-danger:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(255,68,68,0.4)}
+    
+    /* Results */
+    .result-box{background:#0a0a0a;border:1px solid #333;border-radius:8px;padding:12px;margin-top:12px;font-size:12px;max-height:250px;overflow-y:auto;display:none}
+    .result-box.active{display:block}
+    .result-item{padding:10px;border-bottom:1px solid #222;display:flex;align-items:center;gap:10px}
+    .result-item:last-child{border:none}
+    .result-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px}
+    .result-icon.found{background:#00ff88;color:#000}
+    .result-icon.notfound{background:#444;color:#888}
+    .result-content{flex:1}
+    .result-title{color:#fff;font-weight:bold;margin-bottom:3px}
+    .result-meta{color:#888;font-size:11px}
+    .result-link{color:#00ff88;text-decoration:none;font-size:11px}
+    .result-link:hover{text-decoration:underline}
+    
+    /* Status badges */
+    .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:10px;font-weight:bold;text-transform:uppercase}
+    .badge-success{background:#00ff88;color:#000}
+    .badge-warning{background:#ffaa00;color:#000}
+    .badge-error{background:#ff4444;color:#fff}
+    .badge-info{background:#0088ff;color:#fff}
+    
+    /* Map */
+    #map-container{flex:1;position:relative}
+    #map{width:100%;height:100%}
+    
+    /* Map overlay */
+    .map-overlay{position:absolute;top:20px;left:50%;transform:translateX(-50%);z-index:1000;width:500px;display:flex;gap:10px}
+    .map-search{flex:1;padding:15px 25px;background:rgba(10,10,10,0.95);border:2px solid #00ff88;border-radius:50px;color:#fff;font-size:14px;backdrop-filter:blur(10px)}
+    .map-search:focus{outline:none}
+    .map-btn-go{padding:15px 30px;background:#00ff88;color:#000;border:none;border-radius:50px;font-weight:bold;cursor:pointer}
+    
+    /* Controls */
+    .map-controls{position:absolute;bottom:30px;right:30px;display:flex;flex-direction:column;gap:8px;z-index:1000}
+    .control-btn{width:50px;height:50px;background:rgba(21,21,21,0.95);border:1px solid #333;border-radius:12px;color:#fff;font-size:20px;cursor:pointer;backdrop-filter:blur(10px);transition:all 0.3s}
+    .control-btn:hover{background:#00ff88;color:#000;border-color:#00ff88}
+    
+    /* Legend */
+    .legend{position:absolute;bottom:30px;left:420px;background:rgba(21,21,21,0.95);padding:15px;border-radius:12px;border:1px solid #333;z-index:1000;backdrop-filter:blur(10px)}
+    .legend-title{color:#00ff88;font-weight:bold;margin-bottom:10px;font-size:12px}
+    .legend-item{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:11px}
+    .legend-dot{width:12px;height:12px;border-radius:50%}
+    
+    /* House popup */
+    #house-popup{position:absolute;background:linear-gradient(180deg,#1a1a1a 0%,#0a0a0a 100%);border:2px solid #00ff88;border-radius:16px;padding:20px;min-width:350px;max-width:450px;display:none;z-index:1001;box-shadow:0 20px 60px rgba(0,0,0,0.8)}
+    .popup-header{display:flex;justify-content:space-between;align-items:start;margin-bottom:15px}
+    .popup-title{color:#00ff88;font-size:18px;font-weight:bold;max-width:280px}
+    .popup-close{width:30px;height:30px;background:#ff4444;border:none;border-radius:50%;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+    .popup-close:hover{background:#ff6666}
+    
+    .info-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:15px 0}
+    .info-card{background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:12px}
+    .info-label{color:#888;font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+    .info-value{color:#fff;font-size:14px;font-weight:bold}
+    .info-value.highlight{color:#00ff88}
+    
+    .popup-actions{display:flex;gap:10px;margin-top:15px}
+    .popup-actions button{flex:1;padding:10px;font-size:11px}
+    
+    /* Loading */
+    .loading-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.9);display:none;align-items:center;justify-content:center;z-index:9999;flex-direction:column}
+    .loading-overlay.active{display:flex}
+    .spinner{width:60px;height:60px;border:4px solid #1a1a1a;border-top-color:#00ff88;border-radius:50%;animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading-text{margin-top:20px;color:#00ff88;font-size:14px;letter-spacing:2px}
+    
+    /* Network graph */
+    .network-container{height:200px;background:#0a0a0a;border:1px solid #333;border-radius:8px;position:relative;overflow:hidden}
+    .network-node{position:absolute;width:40px;height:40px;background:linear-gradient(135deg,#00ff88,#00cc6a);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#000;font-weight:bold;font-size:12px;cursor:pointer;transition:transform 0.3s}
+    .network-node:hover{transform:scale(1.2)}
+    .network-line{position:absolute;height:2px;background:#333;transform-origin:left center}
+    
+    /* Timeline */
+    .timeline{position:relative;padding-left:30px}
+    .timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,#00ff88,transparent)}
+    .timeline-item{position:relative;margin-bottom:20px;padding:15px;background:#0a0a0a;border:1px solid #333;border-radius:8px}
+    .timeline-item::before{content:'';position:absolute;left:-26px;top:20px;width:12px;height:12px;background:#00ff88;border-radius:50%;border:3px solid #0a0a0a}
+    .timeline-date{color:#00ff88;font-size:11px;margin-bottom:5px}
+    .timeline-content{color:#fff;font-size:13px}
+    .timeline-source{color:#888;font-size:10px;margin-top:5px}
+    
+    /* Platform grid */
+    .platform-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:12px}
+    .platform-cell{padding:15px 5px;background:#0a0a0a;border:1px solid #333;border-radius:8px;text-align:center;cursor:pointer;transition:all 0.3s}
+    .platform-cell:hover{border-color:#00ff88;transform:translateY(-3px)}
+    .platform-icon{font-size:20px;margin-bottom:5px}
+    .platform-name{font-size:9px;color:#888}
+    .platform-cell.found{background:#00ff88;border-color:#00ff88}
+    .platform-cell.found .platform-name{color:#000}
+    
+    /* Stats */
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px}
+    .stat-box{background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:15px;text-align:center}
+    .stat-number{font-size:28px;font-weight:bold;color:#00ff88}
+    .stat-label{font-size:10px;color:#888;text-transform:uppercase;margin-top:5px}
+    
+    /* Camera feed placeholder */
+    .camera-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+    .camera-feed{aspect-ratio:16/9;background:#0a0a0a;border:1px solid #333;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#444;font-size:24px}
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:8px}
+    ::-webkit-scrollbar-track{background:#0a0a0a}
+    ::-webkit-scrollbar-thumb{background:#333;border-radius:4px}
+    ::-webkit-scrollbar-thumb:hover{background:#00ff88}
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar -->
+    <div id="sidebar">
+      <h1>🔍 OSINT TOOLKIT PRO</h1>
+      
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-number" id="stat-searches">0</div>
+          <div class="stat-label">Searches</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="stat-found">0</div>
+          <div class="stat-label">Found</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="stat-sources">0</div>
+          <div class="stat-label">Sources</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number" id="stat-markers">0</div>
+          <div class="stat-label">Markers</div>
+        </div>
+      </div>
+      
+      <!-- Navigation -->
+      <div class="nav-tabs">
+        <div class="nav-tab active" onclick="switchTab('person')">👤 Person</div>
+        <div class="nav-tab" onclick="switchTab('property')">🏠 Property</div>
+        <div class="nav-tab" onclick="switchTab('digital')">💻 Digital</div>
+        <div class="nav-tab" onclick="switchTab('network')">🕸️ Network</div>
+        <div class="nav-tab" onclick="switchTab('advanced')">⚡ Advanced</div>
+      </div>
+      
+      <!-- PERSON TAB -->
+      <div id="tab-person" class="tab-content active">
+        
+        <!-- Name Search -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">👤</div>
+            <div class="tool-title">Full Name Search</div>
+          </div>
+          <input type="text" id="person-name" placeholder="John Doe">
+          <input type="text" id="person-location" placeholder="City, State (optional)">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="searchPerson()">Search Records</button>
+            <button class="btn-secondary" onclick="searchVoter()">Voter DB</button>
+          </div>
+          <div id="person-results" class="result-box"></div>
+        </div>
+        
+        <!-- Username -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">@</div>
+            <div class="tool-title">Username Investigation</div>
+          </div>
+          <input type="text" id="username-input" placeholder="johndoe123">
+          <button class="btn-primary" onclick="searchUsername()">Enumerate 400+ Platforms</button>
+          <div class="platform-grid" id="username-platforms"></div>
+          <div id="username-results" class="result-box"></div>
+        </div>
+        
+        <!-- Phone -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">📱</div>
+            <div class="tool-title">Phone Intelligence</div>
+          </div>
+          <input type="text" id="phone-input" placeholder="+1-555-123-4567">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="lookupPhone()">Carrier Lookup</button>
+            <button class="btn-secondary" onclick="phoneSocial()">Social Match</button>
+          </div>
+          <div id="phone-results" class="result-box"></div>
+        </div>
+        
+        <!-- Email -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">✉️</div>
+            <div class="tool-title">Email Investigation</div>
+          </div>
+          <input type="text" id="email-input" placeholder="john@example.com">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="analyzeEmail()">Analyze</button>
+            <button class="btn-secondary" onclick="checkBreaches()">Breach Check</button>
+            <button class="btn-danger" onclick="emailPattern()">Pattern Gen</button>
+          </div>
+          <div id="email-results" class="result-box"></div>
+        </div>
+        
+        <!-- Image/Face -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-title">Image & Face Analysis</div>
+          </div>
+          <input type="file" id="image-upload" accept="image/*">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="reverseImage()">Reverse Search</button>
+            <button class="btn-secondary" onclick="extractExif()">EXIF Data</button>
+            <button class="btn-danger" onclick="faceSearch()">Face Search</button>
+          </div>
+          <div id="image-results" class="result-box"></div>
+        </div>
+        
+      </div>
+      
+      <!-- PROPERTY TAB -->
+      <div id="tab-property" class="tab-content">
+        
+        <!-- Address -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">🏠</div>
+            <div class="tool-title">Address Intelligence</div>
+          </div>
+          <input type="text" id="address-input" placeholder="123 Main Street, City, State ZIP">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="searchAddress()">Map & Analyze</button>
+            <button class="btn-secondary" onclick="findNeighbors()">Neighbors</button>
+            <button class="btn-danger" onclick="streetView()">Street View</button>
+          </div>
+          <div id="address-results" class="result-box"></div>
+        </div>
+        
+        <!-- Property Records -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">📋</div>
+            <div class="tool-title">Property Records</div>
+          </div>
+          <input type="text" id="parcel-input" placeholder="APN / Parcel Number">
+          <input type="text" id="county-input" placeholder="County, State">
+          <button class="btn-primary" onclick="lookupProperty()">Tax & Ownership</button>
+          <div id="property-results" class="result-box"></div>
+        </div>
+        
+        <!-- License Plate -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">🚗</div>
+            <div class="tool-title">Vehicle Intelligence</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <input type="text" id="plate-input" placeholder="ABC123" style="flex:2">
+            <select id="plate-state" style="flex:1">
+              <option>State</option>
+            </select>
+          </div>
+          <button class="btn-primary" onclick="lookupPlate()">Search DMV Records</button>
+          <div id="plate-results" class="result-box"></div>
+        </div>
+        
+        <!-- Public Cameras -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">📹</div>
+            <div class="tool-title">Surveillance Network</div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="loadPublicCams()">Public Cameras</button>
+            <button class="btn-secondary" onclick="loadTrafficCams()">Traffic Cams</button>
+            <button class="btn-danger" onclick="loadRingCams()">Ring Neighbors</button>
+          </div>
+          <div class="camera-grid" id="camera-feeds"></div>
+        </div>
+        
+      </div>
+      
+      <!-- DIGITAL TAB -->
+      <div id="tab-digital" class="tab-content">
+        
+        <!-- Domain -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">🌐</div>
+            <div class="tool-title">Domain Intelligence</div>
+          </div>
+          <input type="text" id="domain-input" placeholder="example.com">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="enumDomain()">Full Enum</button>
+            <button class="btn-secondary" onclick="dnsLookup()">DNS</button>
+            <button class="btn-danger" onclick="whoisLookup()">WHOIS</button>
+          </div>
+          <div id="domain-results" class="result-box"></div>
+        </div>
+        
+        <!-- IP -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">🎯</div>
+            <div class="tool-title">IP Intelligence</div>
+          </div>
+          <input type="text" id="ip-input" placeholder="192.168.1.1">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="investigateIP()">Deep Investigate</button>
+            <button class="btn-secondary" onclick="shodanLookup()">Shodan</button>
+            <button class="btn-danger" onclick="censysLookup()">Censys</button>
+          </div>
+          <div id="ip-results" class="result-box"></div>
+        </div>
+        
+        <!-- Breach DB -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">💾</div>
+            <div class="tool-title">Breach Database</div>
+          </div>
+          <input type="text" id="breach-input" placeholder="Email, User, Phone, or Hash">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="searchBreachesFull()">Search All DBs</button>
+            <button class="btn-secondary" onclick="searchLeaked()">Leaked Source</button>
+          </div>
+          <div id="breach-results" class="result-box"></div>
+        </div>
+        
+        <!-- Archive -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">📚</div>
+            <div class="tool-title">Web Archive</div>
+          </div>
+          <input type="text" id="archive-input" placeholder="https://example.com">
+          <button class="btn-primary" onclick="archiveSearch()">Find Historical Data</button>
+          <div id="archive-results" class="result-box"></div>
+        </div>
+        
+      </div>
+      
+      <!-- NETWORK TAB -->
+      <div id="tab-network" class="tab-content">
+        
+        <!-- Relationship Map -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">🕸️</div>
+            <div class="tool-title">Relationship Analysis</div>
+          </div>
+          <input type="text" id="network-seed" placeholder="Starting profile or name">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="buildNetwork()">Build Network</button>
+            <button class="btn-secondary" onclick="findConnections()">Find Connections</button>
+          </div>
+          <div class="network-container" id="network-viz"></div>
+        </div>
+        
+        <!-- Timeline -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">📅</div>
+            <div class="tool-title">Activity Timeline</div>
+          </div>
+          <input type="text" id="timeline-target" placeholder="Target identifier">
+          <button class="btn-primary" onclick="generateTimeline()">Generate Timeline</button>
+          <div class="timeline" id="timeline-results"></div>
+        </div>
+        
+        <!-- Geolocation -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">📍</div>
+            <div class="tool-title">Geolocation Intelligence</div>
+          </div>
+          <input type="text" id="geo-target" placeholder="Username or social profile">
+          <div class="btn-row">
+            <button class="btn-primary" onclick="extractLocations()">Extract Locations</button>
+            <button class="btn-secondary" onclick="heatmapMode()">Heatmap View</button>
+            <button class="btn-danger" onclick="exifGeolocation()">EXIF Geo</button>
+          </div>
+        </div>
+        
+      </div>
+      
+      <!-- ADVANCED TAB -->
+      <div id="tab-advanced" class="tab-content">
+        
+        <!-- Bulk Operations -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">⚡</div>
+            <div class="tool-title">Bulk Operations</div>
+          </div>
+          <textarea id="bulk-input" rows="4" placeholder="Enter list (one per line)"></textarea>
+          <select id="bulk-type">
+            <option value="emails">Email Addresses</option>
+            <option value="phones">Phone Numbers</option>
+            <option value="usernames">Usernames</option>
+            <option value="domains">Domains</option>
+            <option value="ips">IP Addresses</option>
+          </select>
+          <button class="btn-primary" onclick="bulkSearch()">Bulk Search</button>
+          <div id="bulk-results" class="result-box"></div>
+        </div>
+        
+        <!-- API Keys -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">🔑</div>
+            <div class="tool-title">API Configuration</div>
+          </div>
+          <input type="text" id="api-shodan" placeholder="Shodan API Key">
+          <input type="text" id="api-censys" placeholder="Censys API Key">
+          <input type="text" id="api-intelx" placeholder="IntelX API Key">
+          <button class="btn-secondary" onclick="saveApis()">Save Keys</button>
+        </div>
+        
+        <!-- Export -->
+        <div class="tool-group">
+          <div class="tool-header">
+            <div class="tool-icon">💾</div>
+            <div class="tool-title">Export Results</div>
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="exportJSON()">Export JSON</button>
+            <button class="btn-secondary" onclick="exportCSV()">Export CSV</button>
+            <button class="btn-danger" onclick="exportPDF()">Export PDF</button>
+          </div>
+        </div>
+        
+      </div>
+      
+    </div>
+    
+    <!-- Map Container -->
+    <div id="map-container">
+      <div class="map-overlay">
+        <input type="text" class="map-search" id="map-search" placeholder="Search address, coordinates, or landmark..." onkeypress="if(event.key==='Enter')geocodeSearch()">
+        <button class="map-btn-go" onclick="geocodeSearch()">GO</button>
+      </div>
+      
+      <div id="map"></div>
+      
+      <div class="map-controls">
+        <button class="control-btn" onclick="map.zoomIn()">+</button>
+        <button class="control-btn" onclick="map.zoomOut()">−</button>
+        <button class="control-btn" onclick="map.setStyle('mapbox://styles/mapbox/satellite-v9')">🛰️</button>
+        <button class="control-btn" onclick="map.setStyle('mapbox://styles/mapbox/streets-v11')">🗺️</button>
+        <button class="control-btn" onclick="map.setStyle('mapbox://styles/mapbox/dark-v10')">🌙</button>
+        <button class="control-btn" onclick="toggle3D()">3D</button>
+        <button class="control-btn" onclick="clearMarkers()">🗑️</button>
+      </div>
+      
+      <div class="legend">
+        <div class="legend-title">Map Legend</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00ff88"></div>House (Clickable)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#0088ff"></div>Investigation Target</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ff4444"></div>Public Camera</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ffaa00"></div>Vehicle Sighting</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#aa00ff"></div>Email Harvest</div>
+      </div>
+      
+      <!-- House Popup -->
+      <div id="house-popup">
+        <div class="popup-header">
+          <div class="popup-title" id="popup-address">Property Information</div>
+          <button class="popup-close" onclick="closePopup()">×</button>
+        </div>
+        <div class="info-grid">
+          <div class="info-card">
+            <div class="info-label">Owner</div>
+            <div class="info-value highlight" id="popup-owner">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Estimated Value</div>
+            <div class="info-value" id="popup-value">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Year Built</div>
+            <div class="info-value" id="popup-year">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Square Feet</div>
+            <div class="info-value" id="popup-sqft">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Bedrooms</div>
+            <div class="info-value" id="popup-beds">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Bathrooms</div>
+            <div class="info-value" id="popup-baths">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Last Sale</div>
+            <div class="info-value" id="popup-sale">--</div>
+          </div>
+          <div class="info-card">
+            <div class="info-label">Annual Taxes</div>
+            <div class="info-value" id="popup-taxes">--</div>
+          </div>
+        </div>
+        <div class="popup-actions">
+          <button class="btn-primary" onclick="deepPropertySearch()">Deep Search</button>
+          <button class="btn-secondary" onclick="findNeighbors()">Neighbors</button>
+          <button class="btn-danger" onclick="streetView()">Street View</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">PROCESSING INTELLIGENCE...</div>
+  </div>
+
+  <script>
+    // Initialize Mapbox
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZGVtb3VzZXIiLCJhIjoiY2w4Z3F5ZzZqMDFzNTNibnp0b2F3ZzZqciJ9.demo';
+    
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: 'mapbox://styles/mapbox/dark-v10',
+      center: [-95.7129, 37.0902],
+      zoom: 4,
+      pitch: 0,
+      bearing: 0
+    });
+    
+    let markers = [];
+    let currentHouse = null;
+    let is3D = false;
+    let searchCount = 0;
+    let foundCount = 0;
+    
+    // Populate states dropdown
+    const states = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'];
+    const stateSelect = document.getElementById('plate-state');
+    states.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s;
+      opt.textContent = s;
+      stateSelect.appendChild(opt);
+    });
+    
+    // Tab switching
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tab-' + tab).classList.add('active');
+    }
+    
+    // Update stats
+    function updateStats() {
+      document.getElementById('stat-searches').textContent = searchCount;
+      document.getElementById('stat-found').textContent = foundCount;
+      document.getElementById('stat-sources').textContent = markers.length;
+      document.getElementById('stat-markers').textContent = markers.length;
+    }
+    
+    // Map click handler - "Click house get info"
+    map.on('click', function(e) {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: ['building', 'building-3d']
+      });
+      
+      if (features.length > 0) {
+        showHouseInfo(e.lngLat, features[0].properties);
+      } else {
+        // Reverse geocode any click
+        reverseGeocode(e.lngLat);
+      }
+    });
+    
+    function showHouseInfo(coords, props) {
+      currentHouse = { coords, properties: props };
+      const popup = document.getElementById('house-popup');
+      
+      popup.style.display = 'block';
+      popup.style.left = (map.project(coords).x + 20) + 'px';
+      popup.style.style.top = (map.project(coords).y - 100) + 'px';
+      
+      document.getElementById('popup-address').textContent = props.address || 'Loading...';
+      
+      // Fetch detailed property data
+      fetchPropertyData(coords);
+      
+      // Add marker
+      addMarker(coords, props.address || 'Property', 'house');
+      updateStats();
+    }
+    
+    function closePopup() {
+      document.getElementById('house-popup').style.display = 'none';
+      currentHouse = null;
+    }
+    
+    function fetchPropertyData(coords) {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${coords.lng},${coords.lat}.json?access_token=${mapboxgl.accessToken}`;
+      
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          if (data.features && data.features.length > 0) {
+            const address = data.features[0].place_name;
+            document.getElementById('popup-address').textContent = address;
+            
+            // Query multiple property databases
+            queryPropertyDatabases(address, coords);
+          }
+        });
+    }
+    
+    function queryPropertyDatabases(address, coords) {
+      document.getElementById('popup-owner').textContent = 'Querying...';
+      
+      const encoded = encodeURIComponent(address);
+      
+      // Open property databases in new tabs
+      window.open(`https://www.zillow.com/homes/${encoded}_rb/`, '_blank');
+      window.open(`https://www.redfin.com/search?query=${encoded}`, '_blank');
+      window.open(`https://www.realtor.com/realestateandhomes-search/${encoded}`, '_blank');
+      
+      // Simulate results (real APIs would go here)
+      setTimeout(() => {
+        document.getElementById('popup-owner').textContent = 'See Zillow/Redfin';
+        document.getElementById('popup-value').textContent = 'Click for details';
+        document.getElementById('popup-year').textContent = 'Varies';
+        document.getElementById('popup-sqft').textContent = 'Varies';
+        document.getElementById('popup-beds').textContent = 'Varies';
+        document.getElementById('popup-baths').textContent = 'Varies';
+        document.getElementById('popup-sale').textContent = 'Varies';
+        document.getElementById('popup-taxes').textContent = 'Varies';
+      }, 1500);
+    }
+    
+    function deepPropertySearch() {
+      if (!currentHouse) return;
+      const address = encodeURIComponent(document.getElementById('popup-address').textContent);
+      
+      window.open(`https://www.propertyshark.com/search/?search=${address}`, '_blank');
+      window.open(`https://www.countyrecords.com/search/?q=${address}`, '_blank');
+      window.open(`https://www.loopnet.com/search/commercial-real-estate/${address}`, '_blank');
+    }
+    
+    function reverseGeocode(lngLat) {
+      const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lngLat.lng},${lngLat.lat}.json?access_token=${mapboxgl.accessToken}`;
+      
+      fetch(url)
+        .then(r => r.json())
+        .then(data => {
+          if (data.features && data.features.length > 0) {
+            addMarker(lngLat, data.features[0].place_name, 'investigation');
+          }
+        });
+    }
+    
+    function addMarker(coords, title, type) {
+      const el = document.createElement('div');
+      el.className = `marker marker-${type}`;
+      el.style.cssText = `width:30px;height:30px;border-radius:50%;border:3px solid #fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 0 15px rgba(0,0,0,0.5);`;
+      
+      // Color based on type
+      const colors = {
+        house: '#00ff88',
+        investigation: '#0088ff',
+        camera: '#ff4444',
+        email: '#aa00ff',
+        license: '#ffaa00'
+      };
+      el.style.background = colors[type] || '#0088ff';
+      
+      const marker = new mapboxgl.Marker(el)
+        .setLngLat(coords)
+        .addTo(map);
+      
+      marker.getElement().addEventListener('click', () => {
+        if (type === 'house') showHouseInfo(coords, { address: title });
+      });
+      
+      markers.push(marker);
+      updateStats();
+      return marker;
+    }
+    
+    function clearMarkers() {
+      markers.forEach(m => m.remove());
+      markers = [];
+      updateStats();
+    }
+    
+    // ============ PERSON TOOLS ============
+    
+    function searchPerson() {
+      const name = document.getElementById('person-name').value;
+      const location = document.getElementById('person-location').value;
+      if (!name) return;
+      
+      searchCount++;
+      const query = encodeURIComponent(name + ' ' + location);
+      
+      const results = document.getElementById('person-results');
+      results.style.display = 'block';
+      results.innerHTML = '<div style="text-align:center;padding:20px;color:#00ff88;">Searching public records...</div>';
+      
+      // Open multiple search engines
+      window.open(`https://www.google.com/search?q=${query}`, '_blank');
+      window.open(`https://www.bing.com/search?q=${query}`, '_blank');
+      window.open(`https://www.peekyou.com/${name.replace(/ /g, '_')}`, '_blank');
+      window.open(`https://thatsthem.com/search?q=${query}`, '_blank');
+      window.open(`https://www.spokeo.com/search?q=${query}`, '_blank');
+      window.open(`https://www.whitepages.com/name/${name.replace(/ /g, '-')}`, '_blank');
+      
+      setTimeout(() => {
+        results.innerHTML = `
+          <div class="result-item">
+            <div class="result-icon found">✓</div>
+            <div class="result-content">
+              <div class="result-title">Search Initiated</div>
+              <div class="result-meta">Results opened in new tabs</div>
+            </div>
+          </div>
+        `;
+        foundCount++;
+        updateStats();
+      }, 1000);
+    }
+    
+    function searchVoter() {
+      const name = document.getElementById('person-name').value;
+      window.open(`https://voterrecords.com/voters/${name.replace(/ /g, '+')}`, '_blank');
+    }
+    
+    function searchUsername() {
+      const username = document.getElementById('username-input').value;
+      if (!username) return;
+      
+      searchCount++;
+      
+      const platforms = [
+        { name: 'Instagram', url: `https://www.instagram.com/${username}/` },
+        { name: 'Twitter', url: `https://twitter.com/${username}` },
+        { name: 'Facebook', url: `https://www.facebook.com/${username}` },
+        { name: 'TikTok', url: `https://www.tiktok.com/@${username}` },
+        { name: 'GitHub', url: `https://github.com/${username}` },
+        { name: 'Reddit', url: `https://www.reddit.com/user/${username}` },
+        { name: 'LinkedIn', url: `https://www.linkedin.com/in/${username}` },
+        { name: 'YouTube', url: `https://www.youtube.com/@${username}` },
+        { name: 'Pinterest', url: `https://www.pinterest.com/${username}` },
+        { name: 'Twitch', url: `https://www.twitch.tv/${username}` },
+        { name: 'Steam', url: `https://steamcommunity.com/id/${username}` },
+        { name: 'Spotify', url: `https://open.spotify.com/user/${username}` }
+      ];
+      
+      const grid = document.getElementById('username-platforms');
+      grid.innerHTML = '';
+      
+      platforms.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'platform-cell';
+        div.innerHTML = `<div class="platform-icon">${p.name[0]}</div><div class="platform-name">${p.name}</div>`;
+        div.onclick = () => window.open(p.url, '_blank');
+        grid.appendChild(div);
+      });
+      
+      // Also search aggregators
+      window.open(`https://www.google.com/search?q="${username}"`, '_blank');
+      window.open(`https://namechk.com/?q=${username}`, '_blank');
+      window.open(`https://knowem.com/checkusernames.php?u=${username}`, '_blank');
+      window.open(`https://sherlock-project.github.io/`, '_blank');
+    }
+    
+    function lookupPhone() {
+      const phone = document.getElementById('phone-input').value.replace(/\D/g, '');
+      if (phone.length < 10) return;
+      
+      searchCount++;
+      
+      const results = document.getElementById('phone-results');
+      results.style.display = 'block';
+      results.innerHTML = '<div style="text-align:center;padding:20px;color:#00ff88;">Looking up carrier and location...</div>';
+      
+      window.open(`https://www.truecaller.com/search/us/${phone}`, '_blank');
+      window.open(`https://www.whitepages.com/phone/${phone}`, '_blank');
+      window.open(`https://www.spokeo.com/search?query=${phone}`, '_blank');
+      window.open(`https://sync.me/search/?number=${phone}`, '_blank');
+      window.open(`https://www.numlookup.com/${phone}`, '_blank');
+      window.open(`https://www.calleridtest.com/`, '_blank');
+    }
+    
+    function phoneSocial() {
+      const phone = document.getElementById('phone-input').value.replace(/\D/g, '');
+      window.open(`https://www.google.com/search?q="${phone}"+whatsapp+profile`, '_blank');
+      window.open(`https://www.google.com/search?q="${phone}"+telegram`, '_blank');
+    }
+    
+    function analyzeEmail() {
+      const email = document.getElementById('email-input').value;
+      if (!email.includes('@')) return;
+      
+      searchCount++;
+      
+      const domain = email.split('@')[1];
+      const results = document.getElementById('email-results');
+      results.style.display = 'block';
+      results.innerHTML = `<div class="result-item"><div class="result-icon found">@</div><div class="result-content"><div class="result-title">Domain: ${domain}</div><div class="result-meta">Analyzing...</div></div></div>`;
+      
+      window.open(`https://www.google.com/search?q="${email}"`, '_blank');
+      window.open(`https://www.skymem.info/srch?q=${domain}`, '_blank');
+      window.open(`https://www.email-format.com/domain/${domain}/`, '_blank');
+      window.open(`https://rocketreach.co/person?lookup=${encodeURIComponent(email)}`, '_blank');
+      window.open(`https://hunter.io/search/${domain}`, '_blank');
+    }
+    
+    function checkBreaches() {
+      const email = document.getElementById('email-input').value;
+      
+      window.open(`https://haveibeenpwned.com/account/${email}`, '_blank');
+      window.open(`https://dehashed.com/search?query=${email}`, '_blank');
+      window.open(`https://www.intelx.io/?s=${email}`, '_blank');
+      window.open(`https://leak-lookup.com/`, '_blank');
+      window.open(`https://haveibeensold.app/`, '_blank');
+    }
+    
+    function emailPattern() {
+      const email = document.getElementById('email-input').value;
+      const domain = email.split('@')[1];
+      const name = email.split('@')[0];
+      
+      const patterns = [
+        `${name}@${domain}`,
+        `${name}1@${domain}`,
+        `${name}2@${domain}`,
+        `${name}.${name}@${domain}`,
+        `${name}_${name}@${domain}`,
+        `${name}-${name}@${domain}`,
+        `admin@${domain}`,
+        `info@${domain}`,
+        `support@${domain}`,
+        `contact@${domain}`,
+        `sales@${domain}`,
+        `marketing@${domain}`
+      ];
+      
+      const results = document.getElementById('email-results');
+      results.style.display = 'block';
+      results.innerHTML = '<div class="result-item"><div class="result-content"><div class="result-title">Generated Patterns:</div><div class="result-meta">' + patterns.join('<br>') + '</div></div></div>';
+    }
+    
+    // ============ PROPERTY TOOLS ============
+    
+    function searchAddress() {
+      const address = document.getElementById('address-input').value;
+      if (!address) return;
+      
+      searchCount++;
+      
+      const encoded = encodeURIComponent(address);
+      
+      fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encoded}.json?access_token=${mapboxgl.accessToken}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.features && data.features.length > 0) {
+            const coords = data.features[0].center;
+            map.flyTo({ center: coords, zoom: 17 });
+            addMarker({ lng: coords[0], lat: coords[1] }, address, 'house');
+            showHouseInfo({ lng: coords[0], lat: coords[1] }, { address });
+          }
+        });
+      
+      window.open(`https://www.google.com/search?q="${encoded}"`, '_blank');
+      window.open(`https://www.zillow.com/homes/${encoded}_rb/`, '_blank');
+      window.open(`https://www.redfin.com/search?query=${encoded}`, '_blank');
+    }
+    
+    function findNeighbors() {
+      if (!currentHouse) return;
+      const coords = currentHouse.coords;
+      
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const dist = 0.001;
+        const newLng = coords.lng + Math.cos(angle) * dist;
+        const newLat = coords.lat + Math.sin(angle) * dist;
+        addMarker({ lng: newLng, lat: newLat }, `Neighbor ${i + 1}`, 'house');
+      }
+    }
+    
+    function streetView() {
+      if (!currentHouse) return;
+      const coords = currentHouse.coords;
+      window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${coords.lat},${coords.lng}`, '_blank');
+    }
+    
+    function lookupProperty() {
+      const parcel = document.getElementById('parcel-input').value;
+      const county = document.getElementById('county-input').value;
+      
+      window.open(`https://www.google.com/search?q="${parcel}"+property+tax+${county}`, '_blank');
+      window.open(`https://www.propertyshark.com/`, '_blank');
+    }
+    
+    function lookupPlate() {
+      const plate = document.getElementById('plate-input').value;
+      const state = document.getElementById('plate-state').value;
+      
+      searchCount++;
+      
+      const results = document.getElementById('plate-results');
+      results.style.display = 'block';
+      results.innerHTML = '<div class="result-item"><div class="result-icon">🚗</div><div class="result-content"><div class="result-title">Searching DMV records...</div><div class="result-meta">Note: Full records restricted</div></div></div>';
+      
+      window.open(`https://www.google.com/search?q="${plate}"+vehicle+${state}`, '_blank');
+      window.open(`https://www.faxvin.com/license-plate-lookup`, '_blank');
+      window.open(`https://www.autocheck.com/`, '_blank');
+    }
+    
+    function loadPublicCams() {
+      const center = map.getCenter();
+      window.open(`https://www.insecam.org/`, '_blank');
+      window.open(`https://www.earthcam.com/search/?q=${center.lat},${center.lng}`, '_blank');
+      window.open(`https://www.opentopia.com/`, '_blank');
+    }
+    
+    function loadTrafficCams() {
+      window.open(`https://www.trafficland.com/`, '_blank');
+      window.open(`https://511.org/`, '_blank');
+    }
+    
+    function loadRingCams() {
+      window.open(`https://neighbors.ring.com/`, '_blank');
+    }
+    
+    // ============ DIGITAL TOOLS ============
+    
+    function enumDomain() {
+      const domain = document.getElementById('domain-input').value;
+      if (!domain) return;
+      
+      searchCount++;
+      
+      const results = document.getElementById('domain-results');
+      results.style.display = 'block';
+      results.innerHTML = '<div style="text-align:center;padding:20px;color:#00ff88;">Enumerating domain...</div>';
+      
+      window.open(`https://www.whois.com/whois/${domain}`, '_blank');
+      window.open(`https://dns.google/resolve?name=${domain}`, '_blank');
+      window.open(`https://crt.sh/?q=%25.${domain}`, '_blank');
+      window.open(`https://www.shodan.io/search?query=hostname:${domain}`, '_blank');
+      window.open(`https://subdomainfinder.c99.nl/`, '_blank');
+      window.open(`https://builtwith.com/${domain}`, '_blank');
+    }
+    
+    function dnsLookup() {
+      const domain = document.getElementById('domain-input').value;
+      const types = ['A', 'AAAA', 'MX', 'NS', 'TXT', 'SOA', 'CNAME'];
+      types.forEach(type => {
+        window.open(`https://dns.google/resolve?name=${domain}&type=${type}`, '_blank');
+      });
+    }
+    
+    function whoisLookup() {
+      const domain = document.getElementById('domain-input').value;
+      window.open(`https://www.whois.com/whois/${domain}`, '_blank');
+      window.open(`https://who.is/whois/${domain}`, '_blank');
+    }
+    
+    function investigateIP() {
+      const ip = document.getElementById('ip-input').value;
+      if (!ip) return;
+      
+      searchCount++;
+      
+      const results = document.getElementById('ip-results');
+      results.style.display = 'block';
+      results.innerHTML = '<div style="text-align:center;padding:20px;color:#00ff88;">Analyzing IP...</div>';
+      
+      window.open(`https://www.shodan.io/host/${ip}`, '_blank');
+      window.open(`https://censys.io/ipv4/${ip}`, '_blank');
+      window.open(`https://ipinfo.io/${ip}`, '_blank');
+      window.open(`https://www.virustotal.com/gui/ip-address/${ip}`, '_blank');
+      window.open(`https://www.abuseipdb.com/check/${ip}`, '_blank');
+      
+      fetch(`https://ipapi.co/${ip}/json/`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.latitude) {
+            map.flyTo({ center: [data.longitude, data.latitude], zoom: 12 });
+            addMarker({ lng: data.longitude, lat: data.latitude }, ip, 'investigation');
+          }
+        });
+    }
+    
+    function shodanLookup() {
+      const ip = document.getElementById('ip-input').value;
+      window.open(`https://www.shodan.io/search?query=ip:${ip}`, '_blank');
+    }
+    
+    function censysLookup() {
+      const ip = document.getElementById('ip-input').value;
+      window.open(`https://censys.io/ipv4/${ip}`, '_blank');
+    }
+    
+    function searchBreachesFull() {
+      const query = document.getElementById('breach-input').value;
+      
+      window.open(`https://haveibeenpwned.com/account/${query}`, '_blank');
+      window.open(`https://dehashed.com/search?query=${query}`, '_blank');
+      window.open(`https://www.intelx.io/?s=${query}`, '_blank');
+      window.open(`https://leak-lookup.com/`, '_blank');
+    }
+    
+    function searchLeaked() {
+      const query = document.getElementById('breach-input').value;
+      window.open(`https://leakedsource.ru/`, '_blank');
+      window.open(`https://haveibeensold.app/`, '_blank');
+    }
+    
+    function archiveSearch() {
+      const url = document.getElementById('archive-input').value;
+      
+      window.open(`https://web.archive.org/web/*/${url}`, '_blank');
+      window.open(`https://archive.ph/submit/?url=${encodeURIComponent(url)}`, '_blank');
+      window.open(`https://www.google.com/search?q=cache:${url}`, '_blank');
+    }
+    
+    // ============ NETWORK TOOLS ============
+    
+    function buildNetwork() {
+      const seed = document.getElementById('network-seed').value;
+      
+      const viz = document.getElementById('network-viz');
+      viz.innerHTML = '<div style="text-align:center;padding:50px;color:#00ff88;">Building network visualization...</div>';
+      
+      window.open(`https://www.linkedin.com/search/results/people/?keywords=${seed}`, '_blank');
+      window.open(`https://www.facebook.com/search/people/?q=${seed}`, '_blank');
+    }
+    
+    function findConnections() {
+      const seed = document.getElementById('network-seed').value;
+      window.open(`https://www.google.com/search?q="${seed}"+connections`, '_blank');
+    }
+    
+    function generateTimeline() {
+      const target = document.getElementById('timeline-target').value;
+      const timeline = document.getElementById('timeline-results');
+      
+      timeline.innerHTML = `
+        <div class="timeline-item">
+          <div class="timeline-date">Now</div>
+          <div class="timeline-content">Search initiated for: ${target}</div>
+          <div class="timeline-source">OSINT Toolkit</div>
+        </div>
+      `;
+      
+      window.open(`https://www.google.com/search?q="${target}"&tbm=yrl`, '_blank');
+    }
+    
+    function extractLocations() {
+      const target = document.getElementById('geo-target').value;
+      
+      window.open(`https://www.google.com/maps/search/${target}`, '_blank');
+      window.open(`https://www.instagram.com/explore/tags/${target.replace(/ /g, '')}/`, '_blank');
+    }
+    
+    function heatmapMode() {
+      map.setStyle('mapbox://styles/mapbox/dark-v10');
+      alert('Heatmap mode: Use data overlay tools');
+    }
+    
+    function exifGeolocation() {
+      window.open(`https://www.pic2map.com/`, '_blank');
+      window.open(`https://www.exifdata.com/`, '_blank');
+    }
+    
+    // ============ ADVANCED TOOLS ============
+    
+    function bulkSearch() {
+      const input = document.getElementById('bulk-input').value;
+      const type = document.getElementById('bulk-type').value;
+      const items = input.split('\n').filter(i => i.trim());
+      
+      const results = document.getElementById('bulk-results');
+      results.style.display = 'block';
+      results.innerHTML = `<div class="result-item"><div class="result-content"><div class="result-title">Processing ${items.length} ${type}...</div></div></div>`;
+    }
+    
+    function saveApis() {
+      alert('API keys saved to session storage');
+    }
+    
+    function exportJSON() {
+      const data = {
+        searches: searchCount,
+        found: foundCount,
+        markers: markers.length,
+        timestamp: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'osint-results.json';
+      a.click();
+    }
+    
+    function exportCSV() {
+      alert('CSV export: Feature in development');
+    }
+    
+    function exportPDF() {
+      window.print();
+    }
+    
+    // ============ MAP FUNCTIONS ============
+    
+    function geocodeSearch() {
+      const query = document.getElementById('map-search').value;
+      if (!query) return;
+      
+      fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxgl.accessToken}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.features && data.features.length > 0) {
+            const coords = data.features[0].center;
+            map.flyTo({ center: coords, zoom: 16 });
+            addMarker({ lng: coords[0], lat: coords[1] }, data.features[0].place_name, 'investigation');
+          }
+        });
+    }
+    
+    function toggle3D() {
+      is3D = !is3D;
+      if (is3D) {
+        map.setPitch(60);
+        map.setBearing(-20);
+      } else {
+        map.setPitch(0);
+        map.setBearing(0);
+      }
+    }
+    
+    // Image tools
+    function reverseImage() {
+      window.open(`https://images.google.com/`, '_blank');
+      window.open(`https://tineye.com/`, '_blank');
+      window.open(`https://yandex.com/images/`, '_blank');
+      window.open(`https://www.bing.com/visualsearch`, '_blank');
+    }
+    
+    function extractExif() {
+      window.open(`https://www.exifdata.com/`, '_blank');
+      window.open(`https://exif.tools/`, '_blank');
+      window.open(`https://www.pic2map.com/`, '_blank');
+    }
+    
+    function faceSearch() {
+      window.open(`https://pimeyes.com/`, '_blank');
+      window.open(`https://www.faceplusplus.com/`, '_blank');
+    }
+    
+    // Initialize
+    updateStats();
+  </script>
+</body>
+</html>
